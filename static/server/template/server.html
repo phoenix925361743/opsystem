@@ -1,0 +1,196 @@
+{% extends 'myadmin/media/base.html' %}
+
+{% block css %}
+    <style>
+        table td {
+            vertical-align: middle !important;
+        }
+
+        table th {
+            text-align: center;
+        }
+    </style>
+{% endblock %}
+
+{% block body-content %}
+    <div class="col-md-12">
+{#        <div class="well" style="margin-top: 5px;">#}
+{#            <form method="get" action="">#}
+{#                <div class="input-group col-md-2">#}
+{#                    <input class="form-control" type="text" placeholder="请输入关键字进行搜索..."/>#}
+{#                    <span class="input-group-btn">#}
+{#                        <button type="submit" class="btn btn-success">搜索</button>#}
+{#                    </span>#}
+{#                </div>#}
+{##}
+{#            </form>#}
+{#            <div class="btn-group col-md-2">#}
+{#                    <button class="glyphicon glyphicon-plus btn btn-info"></button>#}
+{#                </div>#}
+{#        </div>#}
+        <nav class="navbarnavbar-default" style="margin-top: 5px;">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                            data-target="#button-group" aria-expanded="false">
+{#                        <span class="icon-bar"></span>#}
+{#                        <span class="icon-bar"></span>#}
+{#                        <span class="icon-bar"></span>#}
+{#                        <span class="icon-bar"></span>#}
+                    </button>
+                </div>
+                <div class="collapse navbar-collapse" id="button-group">
+                    <form method="get" action="" class="navbar-form navbar-right">
+                        <div class="form-group">
+                            <input class="form-control" type="text" placeholder="请输入关键字进行搜索..."/>
+                        </div>
+                        <button type="submit" class="btn btn-info">搜索</button>
+                    </form>
+                    <ul class="nav navbar-nav">
+{#                        <li><button type="button" class="btn btn-success" onclick="window.location.href='{% url 'add_server' %}'">增加设备信息</button></li>#}
+                        <li><button type="button" class="btn btn-default btn-success">批量添加</button></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <table class="table table-bordered text-center">
+            <caption class="text-center" style="font-size: 25px;">设备信息</caption>
+            <thead>
+            <tr class="success text-center">
+                <th>设备ID</th>
+                <th>管理IP</th>
+                <th>序列号</th>
+                <th>设备型号</th>
+                <th>责任人</th>
+                <th>设备分类</th>
+                <th>设备状态</th>
+                <th colspan="4">设备操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for server in server_all %}
+                <tr class="info">
+                    <td id="serverID">{{ server.server_id }}</td>
+                    <td id="ipaddr">{{ server.ipaddr|default_if_none:"无" }}</td>
+                    <td id="serialNumber">{{ server.serial_number|default:"无" }}</td>
+                    <td id="modelType">{{ server.manufacture }} {{ server.model_type }}</td>
+                    <td id="person">{{ server.person }}</td>
+                    <td id="classifyName">{{ server.classify.classify_name }}</td>
+                    <td id="ststus">{{ server.get_status_display }}</td>
+                    <td>
+                        <button type="button" class="btn btn-info btn-sm" id="detail" data-toggle="collapse"
+                                data-target="#{{ server.server_id }}">详情
+                        </button>
+                    </td>
+                    <td>
+                        <a href="{% url 'server_info' %}?server_id={{ server.server_id }}">
+                            <button type="button" class="btn btn-success btn-sm" data-toggle="modal"
+                                data-target="#editModal" data-id="{{ server.server_id }}">
+                            修改
+                        </button></a>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-info btn-sm">远控</button>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm">删除</button>
+                    </td>
+                </tr>
+                <tr class="collapse server_detail" id="{{ server.server_id }}" style="text-align: left;">
+                    <td colspan="1"></td>
+                    <td colspan="10">
+                        <div id="lifeCycle" class="col-md-4">
+                            <ul>
+                                <li><strong>采购时间: </strong>{{ server.lifecycle.purchase_time|default:"未录入" }}</li>
+                                <li><strong>入库时间: </strong>{{ server.lifecycle.storage_time|default:"未录入" }}</li>
+                                <li><strong>报废时间: </strong>{{ server.lifecycle.scrap_time|default:"未录入" }}</li>
+                                <li><strong>数据记录创建时间: </strong>{{ server.create_time }}</li>
+                                <li><strong>数据记录修改时间: </strong>{{ server.modify_time }}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4" id="attribute">
+                            <ul>
+                                {% for attr_map in server.attributemap_set.filter %}
+                                    <li>
+                                        <strong>{{ attr_map.attribute_id.attribute_name }}: </strong>
+                                        {{ attr_map.attribute_value_id.attribute_value }}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-md-4" id="remoteInfo">
+                            {% for ri in server.remoteinfo_set.filter %}
+                                <ul>
+                                    <li><strong>远程连接方式: </strong>{{ ri.get_connect_type_display }}</li>
+                                    <li><strong>远程连接用户: </strong>{{ ri.remote_username }}</li>
+                                    <li><strong>远程连接密码: </strong>{{ ri.remote_password }}</li>
+                                    <li><strong>远程连接端口: </strong>{{ ri.remote_port }}</li>
+                                </ul>
+                            {% endfor %}
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <!-- 编辑设备信息模态框 -->
+{#    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editlLabel" aria-hidden="true">#}
+{#        <div class="modal-dialog">#}
+{#            <div class="modal-content">#}
+{#                <form class="form-horizontal" role="form" style="margin: 20px;">#}
+{#                    {% csrf_token %}#}
+{#                    <div class="modal-header">#}
+{#                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>#}
+{#                        <h4 class="modal-title" id="editLabel">修改设备信息</h4>#}
+{#                    </div>#}
+{#                    <div class="modal-body">#}
+                        {#                        <div class="form-group">#}
+                        {#                            <label class="control-label">管理IP</label>#}
+                        {#                            <input type="text" class="form-control" id="ipaddr" value="192.168.18.117" />#}
+                        {#                        </div>#}
+{#                    </div>#}
+{#                    <div class="modal-footer">#}
+{#                        <button type="submit" class="btn btn-success" id="submit">提交</button>#}
+{#                        <button type="button" class="btn btn-warning" data-dismiss="modal">关闭</button>#}
+{#                    </div>#}
+{#                </form>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript" src="/static/extra/js/str_format.js"></script>
+    <!-- 修改设备信息 -->
+{#    <script>#}
+{#        $(document).ready(function () {#}
+{#            $("#editModal").on('show.bs.modal', function (event) {#}
+{#                var button = $(event.relatedTarget);#}
+{#                var server_id = button.data('id');#}
+{#                $.ajax({#}
+{#                    url: "{% url 'server_info' %}",#}
+{#                    data: {'server_id': server_id},#}
+{#                    type: "get",#}
+{#                    dataType: "json",#}
+{#                    success: function (ret) {#}
+{#                        $(".modal-body").html("");#}
+{#                        var content = '';#}
+{#                        $.each(ret, function (k, v) {#}
+{#                            var html = '<div class="form-group">' +#}
+{#                                '<label class="control-label">{0}</label>' +#}
+{#                                '<input type="text" class="form-control" value={1} /></div>';#}
+{#                            $(".modal-body").append(chopper.format(html, k, v));#}
+{#                        });#}
+{#                    }#}
+{#                })#}
+{#            })#}
+{#        })#}
+{#    </script>#}
+    <!-- 隐藏所有折叠元素 -->
+    <script>
+        $(function () {
+            $(".server_detail").collapse('hide');
+        })
+    </script>
+{% endblock %}

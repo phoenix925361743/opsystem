@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>服务器管理</title>
+</head>
+<body>
+<div class="body">
+    {% if service_data %}
+        {% if service_data.error %}
+            <p>{{ service_data.error }}</p>
+        {% else %}
+            {% for service_info in service_data %}
+                <p>{{ service_info }}</p>
+            {% endfor %}
+            {{ service_data }}
+        {% endif %}
+    {% else %}
+        <form method="post" action="" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_ul }}
+            <label><button type="submit">提交</button></label>
+        </form>
+    {% endif %}
+</div>
+</body>
+</html>

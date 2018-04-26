@@ -1,0 +1,99 @@
+{% extends 'myadmin/base.html' %}
+
+{% block content %}
+    <div class="content-header">
+        <h2 class="layui-card-header" style="font-size: large;">灌装管理</h2>
+    </div>
+    <div class="content-breadcrumb layui-bg-gray">
+        <span class="layui-breadcrumb" lay-separator=">">
+          <a href="{% url 'index' %}"><i class="layui-icon">&#xe68e;</i> 仪表板</a>
+          <a><cite>自动灌装</cite></a>
+            <a><cite>高级设置</cite></a>
+        </span>
+    </div>
+    <div class="content-tabs">
+        <div class="layui-tab layui-tab-card" lay-filter="install">
+            <ul class="layui-tab-title">
+                <li class="layui-this" id="systemAudit" lay-id="systemAudit">机器实例审核</li>
+            </ul>
+            <br/>
+            <div class="layui-tab-content">
+                <div class="layui-tab-item layui-show">
+                    <div class="tips">
+                        <div class="layui-collapse layui-field-box" lay-accordion="">
+                            <div class="layui-colla-item">
+                                <h2 class="layui-colla-title">使用说明-2018/04/10</h2>
+                                <div class="layui-colla-content">
+                                    <ul>
+                                        <li>1、用于审核新添加的机器实例；</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <br/>
+                        <fieldset class="layui-elem-field">
+                            <legend>机器实例审核</legend>
+                            <br/>
+                            <div class="layui-field-box">
+                                <table id="system_audit_table" lay-filter="systemAuditTable"></table>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <!-- 表格操作按钮 -->
+    <script type="text/html" id="statusTpl">
+        {% verbatim %}
+        <input type="checkbox" name="status" lay-skin="switch" lay-text="是|否" value="{{ d.ip }}"
+               lay-filter="statusStatus" {{ d.status== true ? 'checked' : '' }}>
+        {% endverbatim %}
+    </script>
+    <script>
+        layui.use(['element', 'table', 'form', 'layer'], function () {
+            var element = layui.element,
+                table = layui.table,
+                form = layui.form,
+                layer = layui.layer,
+                $ = layui.jquery;
+            <!-- 手动展开导航栏 -->
+            $("#install_nav_father").addClass("layui-nav-itemed");
+            <!-- 渲染未审核机器实例 -->
+            table.render({
+                elem: '#system_audit_table',
+                url: '{% url 'system_audit_get' %}',
+                page: true,
+                limit: 20,
+                limits: [20, 40, 60, 80, 100],
+                id: 'system__audit_table',
+                cols: [[
+                    {field: 'ip', title: 'IP地址', sort: true, align: "center"},
+                    {field: 'mac', title: 'MAC地址', align: "center"},
+                    {field: 'nic', title: '网口名称', align: "center"},
+                    {field: 'profile', title: '配置文件', align: "center"},
+                    {field: 'usage', title: '机器用途', align: "center"},
+                    {field: 'person_in_charge', title: '创建者', align: "center"},
+                    {field: 'status', title: '审核状态', align: "center", templet: '#statusTpl'},
+                ]]
+            });
+            <!-- 监听机器实例启用状态切换 -->
+            form.on('switch(statusStatus)', function (obj) {
+                $.ajax({
+                    url: "{% url 'system_audit' %}",
+                    type: "post",
+                    dataType: "text",
+                    data: {
+                        "ip": this.value,  //锁定数据用
+                    },
+                    success: function () {
+                        location.reload();
+                    }
+                })
+            });
+        })
+    </script>
+{% endblock %}

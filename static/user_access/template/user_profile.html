@@ -1,0 +1,177 @@
+{% extends 'myadmin/base.html' %}
+
+{% block content %}
+    <div class="content-header">
+        <h2 class="layui-card-header" style="font-size: large;">个人信息</h2>
+    </div>
+    <div class="content-breadcrumb layui-bg-gray">
+        <span class="layui-breadcrumb" lay-separator=">">
+          <a href="{% url 'index' %}">仪表板</a>
+          <a><cite>个人信息</cite></a>
+        </span>
+    </div>
+    <div class="content-tabs">
+        <div class="layui-tab">
+            <ul class="layui-tab-title">
+                <li class="layui-this">基本信息</li>
+                <li>修改密码</li>
+                <li>登录记录</li>
+            </ul>
+            <div class="layui-tab-content">
+                <div class="layui-tab-item layui-show">
+                    <div class="introduce-info">
+                        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+                            <legend><strong>{{ user_info.username }}</strong></legend>
+                        </fieldset>
+                        <blockquote class="layui-elem-quote layui-quote-nm">
+                            <span>个人简介：&nbsp;</span><br/><br/>
+                            <strong>{{ user_info.userprofile.introduce|default:"这个家伙很懒，什么也没有写..." }}</strong>
+                        </blockquote>
+                        <blockquote class="layui-elem-quote layui-quote-nm">
+                            <ul>
+                                <li>
+                                    <span>用户名：&nbsp;</span>
+                                    <strong>{{ user_info.username }}</strong>
+                                    <hr class="layui-bg-gray">
+                                </li>
+                                <li>
+                                    <span>邮箱：&nbsp;</span>
+                                    <strong>{{ user_info.email }}</strong>
+                                    <hr class="layui-bg-gray">
+                                </li>
+                                <li>
+                                    <span>所属部门：&nbsp;</span>
+                                    <strong>{{ user_info.depart.depart }}</strong>
+                                    <hr class="layui-bg-gray">
+                                </li>
+                                <li>
+                                    <span>联系电话：&nbsp;</span>
+                                    <strong>{{ user_info.userprofile.phone|default_if_none:"" }}</strong>
+                                </li>
+                            </ul>
+                        </blockquote>
+                    </div>
+                    <div></div>
+                </div>
+                <div class="layui-tab-item">
+                    <div class="layui-fluid" id="add_form" style="margin-left: 35%; margin-top: 15%">
+                        <form class="layui-form layui-form-pane" style="margin-top: 15px;">
+                            {% csrf_token %}
+                            <div class="layui-form-item">
+                                <div class="layui-inline">
+                                    <label class="layui-form-label">原密码</label>
+                                    <div class="layui-input-block">
+                                        <input name="old_pass" id="old_pass" autocomplete="off" class="layui-input"
+                                               type="password" placeholder="输入原密码...">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <div class="layui-inline">
+                                    <label class="layui-form-label">新密码</label>
+                                    <div class="layui-input-block">
+                                        <input name="new_pass1" id="new_pass1" autocomplete="off" class="layui-input"
+                                               type="password" placeholder="输入新密码...">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <div class="layui-inline">
+                                    <label class="layui-form-label">新密码</label>
+                                    <div class="layui-input-block">
+                                        <input name="new_pass2" id="new_pass2" autocomplete="off" class="layui-input"
+                                               type="password" placeholder="再次输入新密码...">
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="message" style="text-align: center"></div>
+                            <div class="layui-form-item" style="margin-left: 8%;margin-top: 5px;">
+                                <button type="submit" class="layui-btn layui-btn-sm" id="add_submit">提交</button>
+                                <button type="reset" class="layui-btn layui-btn-sm">重置</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="layui-tab-item">
+                    <div class="login-record">
+                        <table class="layui-table" lay-size="lg">
+                            <thead>
+                                <tr>
+                                    <th>登录IP</th>
+                                    <th>登录时间</th>
+                                    <th>退出时间</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lr in user_info.loginrecord_set.filter %}
+                                    <tr>
+                                        <td>{{ lr.login_ip }}</td>
+                                        <td>{{ lr.login_time|date:"Y-m-d H:i:s" }}</td>
+                                        <td>{{ lr.login_exit_time|date:"Y-m-d H:i:s" }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+<script>
+    layui.use(['element', 'form', 'laydate', 'layer', 'table'], function () {
+        var element = layui.element,
+            form = layui.form,
+            $ = layui.jquery;
+        $("#add_submit").click(function () {
+            $("form").submit(function (event) {
+                event.preventDefault();
+            });
+            var old_pass = $("#old_pass").val(),
+                new_pass1 = $("#new_pass1").val(),
+                new_pass2 = $("#new_pass2").val();
+            if (old_pass === "" || new_pass1 === "" || new_pass2 === "") {
+                layer.msg("输入不能为空！");
+                $("form").submit(function (event) {
+                    event.preventDefault();
+                })
+            }
+            else {
+                if (new_pass1 === new_pass2) {
+                    if (new_pass1.length > 15 || new_pass1.length < 6) {
+                        layer.msg("密码长度在6~15个字符间！");
+                    }
+                    else {
+                        $.ajax({
+                            url: '{% url "change_pass" %}',
+                            data: {
+                                'old_pass': old_pass,
+                                'new_pass': new_pass1,
+                            },
+                            type: "post",
+                            dataType: "json",
+                            success: function (d) {
+                                if (d.code === "0") {
+                                    layer.msg("原密码校验失败，请重试！");
+                                }
+                                else if (d.code === "1") {
+                                    layer.msg("密码修改成功，请重新登录！");
+                                    var redirects = function () {
+                                        $(location).prop('href', '{% url 'logout' %}');
+                                    };
+                                    setTimeout(redirects, 1000);  //延时1秒执行重定向函数
+                                }
+                            }
+                        })
+                    }
+                }
+                else {
+                    layer.msg("两次输入的密码不一致，请确认后提交！");
+                }
+            }
+        });
+    })
+</script>
+{% endblock %}

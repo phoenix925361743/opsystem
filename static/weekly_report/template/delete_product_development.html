@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>运维管理平台</title>
+    <link rel="stylesheet" href="/static/myadmin/layui/css/layui.css">
+</head>
+<body>
+<div id="search_form" style="margin-left: 15px;margin-top: 10px;">
+    <form class="layui-form layui-form-pane" id="search_form">
+        {% csrf_token %}
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <div class="layui-input-inline">
+                    <select name="date_period" id="date_period" lay-filter="date_period" lay-search="">
+                        <option value="">--选择或搜索时间周期--</option>
+                    </select>
+                </div>
+                <button class="layui-btn layui-btn-sm" id="search" style="margin-top: 3px;">筛选</button>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <button class="layui-btn layui-btn-sm layui-btn-danger" id="delete">删除选中行</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<table id="product_development_delete" lay-filter="select"></table>
+
+<script src="/static/myadmin/layui/layui.js"></script>
+<script>
+    layui.use(['table', 'form'], function () {
+        var table = layui.table,
+            form = layui.form,
+            $ = layui.jquery;
+        <!-- 动态获取时间周期信息 -->
+        $.ajax({
+            url: "{% url 'date_period_get' %}",
+            type: "get",
+            dataType: 'json',
+            success: function (d) {
+                $.each(d, function (i, v) {
+                    if ('{{ d.date_period.start_date|date:"Ymd" }}' + "--" + '{{ d.date_period.end_date|date:"Ymd" }}' === v) {
+                        $('#date_period').append("<option name='date_period' selected='selected' value='" + v + "'>" + v + "</option>");
+                    }
+                    else {
+                        $('#date_period').append("<option name='date_period' value='" + v + "'>" + v + "</option>");
+                    }
+                });
+                $('#date_period').trigger('change');
+                form.render();
+            }
+        });
+        <!-- 渲染数据表格 -->
+        table.render({
+            elem: '#product_development_delete',
+            url: '{% url "product_development_table_get" %}',
+            id: 'productDevelopmentTable',
+            page: true,
+            width: 1000,
+            cols:[[
+                {type:'checkbox', fixed: 'left'},
+                {field: 'id', title: 'ID', align: "center", sort: true},
+                {field: 'product', title: '产品', align: "center"},
+                {field: 'sub_product', title: '子产品', align: "center"},
+                {field: 'job_goal', title: '工作目标', align: "center"},
+                {field: 'job_content', title: '工作内容', align: "center"},
+                {field: 'summarize', title: '工作总结', align: "center"},
+                {field: 'next_week_plan', title: '下周计划', align: "center"},
+                {field: 'stage_plan', title: '阶段性计划', align: "center"},
+                {field: 'remark', title: '备注说明', align: "center"},
+            ]],
+        });
+        <!-- 重载数据表格 -->
+        $("#search").click(function () {
+            $("form").submit(function (event) {
+                event.preventDefault();
+            });  // 阻止表单提交，设置表单只是为了表单的样式orz...阻止提交是因为如果提交了表单，就无法加载数据表格...
+            table.reload('productDevelopmentTable', {
+                where: {
+                    date_period: $("#date_period").val()
+                }
+            });
+        });
+        $('#delete').click(function () {
+            $("form").submit(function (event) {
+                event.preventDefault();
+            });
+            var checkStatus = table.checkStatus('productDevelopmentTable');
+            var data = checkStatus.data;
+            var id_array = [];
+            $.each(data, function (index, value) {
+                id_array.push(value.id);
+            });
+            if (id_array.length === 0) {
+                layer.msg("没有选中任何记录");
+            }
+            else {
+                layer.confirm(
+                    "确定删除吗？",
+                    {
+                        icon: 2,
+                        title: "彻底删除？"
+                    },
+                    function (index) {
+                        $.ajax({
+                            url: '{% url "product_development_delete" %}',
+                            data: {
+                                "id_data": JSON.stringify(id_array)
+                            },
+                            type: 'post',
+                            dataType: 'json',
+                        });
+                        layer.close(index);
+                        layer.msg("记录删除成功");
+                        table.reload('productDevelopmentTable');
+                    }
+                );
+            }
+        })
+    })
+</script>
+
+</body>
+</html>

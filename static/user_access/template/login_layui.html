@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+    <link rel="stylesheet" href="/static/myadmin/layui/css/layui.css">
+    <link rel="icon" href="/static/myadmin/media/image/favicon.ico" type="image/x-icon"/>
+</head>
+<body style="background-image: url('/static/user_access/template/assets/img/backgrounds/1.jpg')">
+<div id="login_form" style="position: absolute; top: 35%; left: 40%;width: 480px;height: 240px;">
+    <form class="layui-form layui-form-pane" action="" style="margin-top: 60px;margin-left: 60px;">
+        <h2>运维管理平台</h2>
+        <div class="layui-form-item">
+            <label class="layui-form-label">账号</label>
+            <div class="layui-input-inline">
+                <input name="username" lay-verify="required" placeholder="请输入用户名或者邮箱..." autocomplete="off" class="layui-input"
+                       type="text">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">密码</label>
+            <div class="layui-input-inline">
+                <input name="password" lay-verify="required" placeholder="请输入密码..." autocomplete="off" class="layui-input"
+                       type="password">
+            </div>
+        </div>
+    </form>
+</div>
+<script src="/static/myadmin/layui/layui.js"></script>
+</body>
+</html>

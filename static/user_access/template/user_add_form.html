@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>运维管理平台</title>
+    <link rel="stylesheet" href="/static/myadmin/layui/css/layui.css">
+</head>
+<body>
+<div class="layui-fluid" id="add_form" style="margin-left: 15px;">
+    <form class="layui-form layui-form-pane" id="add_form_content">
+        {% csrf_token %}
+        <div class="info"><strong style="color: red;">红色星号为必填项 *</strong></div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>用户名</label>
+                <div class="layui-input-block">
+                    {% if d %}
+                        <input name="username" id="username" autocomplete="off"
+                               class="layui-input" type="text" placeholder="输入中文姓名..." value="{{ d.username }}">
+                    {% else %}
+                        <input name="username" id="username" autocomplete="off"
+                               class="layui-input" type="text" placeholder="输入中文姓名...">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>邮箱地址</label>
+                <div class="layui-input-block">
+                    {% if d %}
+                        <input name="email" id="email" autocomplete="off"
+                               class="layui-input" type="text" placeholder="输入邮箱地址..." value="{{ d.email }}">
+                    {% else %}
+                        <input name="email" id="email" autocomplete="off"
+                               class="layui-input" type="text" placeholder="输入邮箱地址...">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>用户密码</label>
+                <div class="layui-input-block">
+                    {% if d %}
+                        <input name="password1" id="password1" autocomplete="off"
+                               class="layui-input" type="password" placeholder="输入用户密码..." value="{{ d.password }}">
+                    {% else %}
+                        <input name="password1" id="password1" autocomplete="off"
+                               class="layui-input" type="password" placeholder="输入用户密码...">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>确认密码</label>
+                <div class="layui-input-block">
+                    {% if d %}
+                        <input name="password2" id="password2" autocomplete="off"
+                               class="layui-input" type="password" placeholder="确认用户密码..." value="{{ d.password }}">
+                    {% else %}
+                        <input name="password2" id="password2" autocomplete="off"
+                               class="layui-input" type="password" placeholder="确认用户密码...">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>所属部门</label>
+                <div class="layui-input-inline">
+                    <select name="depart" id="depart" lay-verify="depart" lay-search="">
+                        <option value="">--选择或搜索部门--</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>角色</label>
+                <div class="layui-input-block" id="role"></div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">用户组</label>
+                <div class="layui-input-block" id="user_group"></div>
+            </div>
+        </div>
+        <div class="layui-form-item layui-hide">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>提交类型</label>
+                <div class="layui-input-block">
+                    {% if d %}
+                        <input name="types" id="types" autocomplete="off" class="layui-input" type="text" value="update">
+                    {% else %}
+                        <input name="types" id="types" autocomplete="off" class="layui-input" type="text" value="submit">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item" style="margin-left: 35%;">
+            {% if d %}
+                <button type="button" class="layui-btn layui-btn-sm" id="add_submit">更新</button>
+            {% else %}
+                <button type="button" class="layui-btn layui-btn-sm" id="add_submit">提交</button>
+            {% endif %}
+            <button type="reset" class="layui-btn layui-btn-sm">重置</button>
+        </div>
+    </form>
+</div>
+<script src="/static/myadmin/layui/layui.js"></script>
+<script>
+    layui.use(['element', 'form', 'laydate', 'layer', 'table'], function () {
+        var element = layui.element,
+            form = layui.form,
+            laydate = layui.laydate,
+            $ = layui.jquery,
+            layer = layui.layer,
+            table = layui.table;
+        <!-- 获取部门数据 -->
+        $.ajax({
+            url: "{% url 'depart_get' %}",
+            type: "get",
+            dataType: 'json',
+            success: function (d) {
+                $.each(d, function (i, v) {
+                    if ('{{ d.depart.depart }}' === v) {
+                        $('#depart').append("<option name='depart' selected='selected' value='" + v + "'>" + v + "</option>");
+                    }
+                    else {
+                        $('#depart').append("<option name='depart' value='" + v + "'>" + v + "</option>");
+                    }
+                });
+                $('#depart').trigger('change');
+                form.render();
+            }
+        });
+        <!-- 获取角色数据 -->
+        $.ajax({
+            url: "{% url 'role_get' %}",
+            type: "get",
+            dataType: 'json',
+            success: function (data) {
+                {% if d %}
+                    var user_role = [];
+                    {% for r in d.role.all %}
+                        user_role.push("{{ r.role_name }}");
+                    {% endfor %}
+                    $.each(data, function (i, v) {
+                        if (user_role.indexOf(v) !== -1) {
+                            $('#role').append("<input name='role' title=" + v + " type='checkbox' checked value='"+ v +"'>");
+                        }
+                        else {
+                            $('#role').append("<input name='role' title=" + v + " type='checkbox' value='"+ v +"'>");
+                        }
+                    });
+                {% else %}
+                    $.each(data, function (i, v) {
+                        $('#role').append("<input name='role' title=" + v + " type='checkbox' value='"+ v +"'>");
+                    });
+                {% endif %}
+                form.render();
+            }
+        });
+        <!-- 获取用户组数据 -->
+        $.ajax({
+            url: "{% url 'user_group_get' %}",
+            type: "get",
+            dataType: 'json',
+            success: function (data) {
+                {% if d %}
+                    var user_group = [];
+                    {% for u in d.usergroup_set.all %}
+                        user_group.push("{{ u.group_name }}");
+                    {% endfor %}
+                    $.each(data, function (i, v) {
+                        if (user_group.indexOf(v) !== -1) {
+                            $('#user_group').append("<input name='user_group' title=" + v + " type='checkbox' checked value='"+ v +"'>");
+                        }
+                        else {
+                            $('#user_group').append("<input name='user_group' title=" + v + " type='checkbox' value='"+ v +"'>");
+                        }
+                    });
+                {% else %}
+                    $.each(data, function (i, v) {
+                        $('#user_group').append("<input name='user_group' title=" + v + " type='checkbox' value='"+ v +"'>");
+                    });
+                {% endif %}
+                form.render();
+            }
+        });
+        $('#add_submit').click(function () {
+            var username = $('#username').val(),
+                email = $('#email').val(),
+                depart = $('#depart').val(),
+                role = [],
+                user_group = [],
+                password1 = $("#password1").val(),
+                password2 = $("#password2").val();
+            $("input:checkbox[name='role']:checked").each(function () {
+                role.push($(this).val())
+            });
+            $("input:checkbox[name='user_group']:checked").each(function () {
+                user_group.push($(this).val())
+            });
+            var emailReg = /^[a-zA-Z0-9_-]+@([a-zA-Z0-9]+\.)+(com|cn|net|org)$/;
+            if (username === "" || email === "" || depart === "" || role.length === 0) {
+                layer.msg("请填写必填项内容");
+                return false;  //阻止表单提交
+            }
+            else if (emailReg.test(email) === false) {
+                layer.msg("请输入正确的邮箱地址！");
+                return false;
+            }
+            else if (password1 !== password2) {
+                layer.msg("两次密码不一致，请检查后再提交!");
+                return false;
+            }
+            else {
+                <!-- 如果成功触发表单提交，则获取父body的索引index，并在父页面关闭当前弹出层 -->
+                $.ajax({
+                    url: "{% url 'user_add' %}",
+                    type: "post",
+                    dataType: "json",
+                    data: {
+                        "username": username,
+                        "email": email,
+                        "depart": depart,
+                        "role": JSON.stringify(role),
+                        "user_group": JSON.stringify(user_group),
+                        "password": password1,
+                        "types": $("#types").val(),
+                    },
+                });
+                var index = parent.layer.getFrameIndex(window.name);
+                parent.layer.msg("提交成功！");
+                parent.layer.close(index);
+            }
+        });
+    })
+</script>
+</body>
+</html>

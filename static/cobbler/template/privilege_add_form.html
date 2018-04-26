@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>运维管理平台</title>
+    <link rel="stylesheet" href="/static/myadmin/layui/css/layui.css">
+</head>
+<body>
+<div class="layui-fluid" id="add_form" style="margin-left: 15px;">
+    <form class="layui-form layui-form-pane" id="add_form_content">
+        {% csrf_token %}
+        <div class="info"><strong style="color: red;">红色星号为必填项 *</strong></div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>开始时间</label>
+                <div class="layui-input-block">
+                    <input name="start_time" id="start_time" autocomplete="off"
+                               class="layui-input" type="text" placeholder="选择日期...">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>结束时间</label>
+                <div class="layui-input-block">
+                    <input name="end_time" id="end_time" autocomplete="off"
+                           class="layui-input" type="text" placeholder="选择日期...">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>授权用户</label>
+                <div class="layui-input-inline">
+                    <select name="target_user" id="target_user" lay-verify="target_user" lay-search="">
+                        <option value="">--选择或搜索用户--</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item" style="margin-left: 35%;">
+            <button type="button" class="layui-btn layui-btn-sm" id="add_submit">提交</button>
+            <button type="reset" class="layui-btn layui-btn-sm">重置</button>
+        </div>
+    </form>
+</div>
+<script src="/static/myadmin/layui/layui.js"></script>
+<script>
+    layui.use(['element', 'form', 'laydate', 'layer', 'table'], function () {
+        var element = layui.element,
+            form = layui.form,
+            laydate = layui.laydate,
+            $ = layui.jquery,
+            layer = layui.layer,
+            table = layui.table;
+        laydate.render({
+            elem: '#start_time'
+        });
+        laydate.render({
+            elem: '#end_time'
+        });
+        <!-- 动态获取授权用户列表 -->
+        $.ajax({
+            url: "{% url 'username_get' %}",
+            type: "get",
+            dataType: 'json',
+            success: function (d) {
+                $.each(d, function (i, v) {
+                    $('#target_user').append("<option name='target_user' value='" + v + "'>" + v + "</option>");
+                });
+                $('#target_user').trigger('change');
+                form.render();
+            }
+        });
+        <!-- 提交表单 -->
+        $("#add_submit").click(function () {
+            var start_time = $("#start_time").val(),
+                end_time = $("#end_time").val(),
+                target_user = $("#target_user").val();
+            if (start_time === "" || end_time === "" || target_user === "") {
+                layer.msg("请填写必填项!")
+            }
+            else {
+                $.ajax({
+                    url: "{% url 'privilege_add' %}",
+                    type: "post",
+                    dataType: "json",
+                    data: {
+                        "start_time": start_time,
+                        "end_time": end_time,
+                        "target_user": target_user,
+                        "ip": "{{ ip }}",
+                    },
+                });
+                var index = parent.layer.getFrameIndex(window.name);
+                parent.layer.msg("提交成功");
+                parent.layer.close(index);
+            }
+        })
+    })
+</script>
+</body>
+</html>

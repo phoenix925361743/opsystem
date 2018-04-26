@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>运维管理平台</title>
+    <link rel="stylesheet" href="/static/myadmin/layui/css/layui.css">
+</head>
+<body>
+<blockquote class="layui-elem-quote">资产记录--{{ asset_number }}</blockquote>
+<fieldset class="layui-elem-field">
+    <legend style="color: #0b94ea">固定属性
+        {% if "超级管理员" in role %}
+            <button class="layui-btn layui-btn-xs layui-btn-normal" id="edit1"><i class="layui-icon">&#xe642;</i></button>
+        {% endif %}
+    </legend>
+    <div class="layui-field-box">
+        <ul style="font-size: 16px;">
+            <li><span style="color: #417b57">资产名称:</span>&nbsp;&nbsp;{{ asset.name }}</li><br/>
+            <li><span style="color: #417b57">资产编号:</span>&nbsp;&nbsp;{{ asset.asset_number }}</li><br/>
+            <li><span style="color: #417b57">资产描述:</span>&nbsp;&nbsp;{{ asset.desc|default:'无' }}</li><br/>
+            <li><span style="color: #417b57">创建时间:</span>&nbsp;&nbsp;{{ asset.create_time|date:'Y-m-d' }}</li><br/>
+        </ul>
+    </div>
+</fieldset>
+<br/>
+
+<fieldset class="layui-elem-field">
+    <legend style="color: #4bad4b;">高级属性
+        {% if "超级管理员" in role %}
+            <div class="layui-btn-group">
+                <button class="layui-btn layui-btn-xs" id="edit2"><i class="layui-icon">&#xe654;</i></button>
+                <button class="layui-btn layui-btn-xs layui-btn-danger" id="edit4"><i class="layui-icon">&#xe642;</i></button>
+            </div>
+        {% endif %}
+    </legend>
+    <div class="layui-field-box">
+        <ul style="font-size: 16px;">
+            {% for p in propertys %}
+                <li><span style="color: rebeccapurple">{{ p.property_name.name }}:</span>&nbsp;&nbsp;{{ p.property_value.value }}</li><br/>
+            {% empty %}
+                <li>无</li>
+            {% endfor %}
+        </ul>
+    </div>
+</fieldset>
+<br/>
+
+<fieldset class="layui-elem-field">
+    <legend style="color: firebrick">生命周期
+        {% if "超级管理员" in role %}
+            <button class="layui-btn layui-btn-xs layui-btn-warm" id="edit3"><i class="layui-icon">&#xe642;</i></button>
+        {% endif %}
+    </legend>
+    <div class="layui-field-box">
+        <ul style="font-size: 16px;">
+            <li><span style="color: #4d86ba">采购日期:</span>&nbsp;&nbsp;{{ life_cycle.purchase_time|date:'Y-m-d'|default:"未填写" }}</li><br/>
+            <li><span style="color: #4d86ba">入库日期:</span>&nbsp;&nbsp;{{ life_cycle.storage_time|date:'Y-m-d'|default:"未填写" }}</li><br/>
+            <li><span style="color: #4d86ba">使用日期:</span>&nbsp;&nbsp;{{ life_cycle.use_time|date:'Y-m-d'|default:"未填写" }}</li><br/>
+            <li><span style="color: #4d86ba">报废日期:</span>&nbsp;&nbsp;{{ life_cycle.scrap_time|date:'Y-m-d'|default:"未填写" }}</li><br/>
+        </ul>
+    </div>
+</fieldset>
+<br/>
+
+<fieldset class="layui-elem-field">
+    <legend style="color: orangered">使用记录</legend>
+    <div class="layui-field-box">
+        <ul style="font-size: 16px;">
+            {% if record %}
+                {% for r in record %}
+                    {% ifnotequal r.use_type.name "闲置" %}
+                        <li style="color: #3b97ff">{{ r.person.username }}&nbsp;&nbsp;{{ r.record_time|default:""|date:'Y-m-d' }}&nbsp;&nbsp;
+                            {{ r.use_type.name }}, 使用说明:{{ r.desc|default:"" }}。</li>
+                    {% else %}
+                        {% if r.person %}
+                            <li style="color: #3b97ff">{{ r.person.username }}&nbsp;&nbsp;{{ r.record_time|default:""|date:'Y-m-d' }}&nbsp;&nbsp;
+                            {{ r.use_type.name }}, 使用说明:{{ r.desc|default:"" }}。</li>
+                        {% else %}
+                            <li style="color: #2fab4d">资产&nbsp;&nbsp;{{ asset_number }}&nbsp;&nbsp;当前处于&nbsp;&nbsp;{{ r.use_type.name }}&nbsp;&nbsp;状态。</li>
+                        {% endif %}
+                    {% endifnotequal %}
+                {% endfor %}
+            {% else %}
+                <li>无记录</li>
+            {% endif %}
+        </ul>
+    </div>
+</fieldset>
+<br/>
+
+<script src="/static/myadmin/layui/layui.js"></script>
+<script>
+    layui.use(['element', 'form', 'layer'], function () {
+        var $ = layui.jquery,
+            element = layui.element,
+            layer = layui.layer,
+            form = layui.form;
+        <!-- 监听固定属性编辑按钮 -->
+        $("#edit1").click(function () {
+            layer.open({
+                type: 2,
+                title: ['编辑资产信息', 'font-size:20px;'],
+                id: 'edit1_depart_asset_form', //防止重复弹出
+                content: '{% url "depart_asset_add_form" %}' + "?asset_number=" + {{ asset_number }},
+                area: ["500px", "400px"],
+                maxmin: false,
+                skin: 'layui-layer-lan',
+            });
+        });
+        <!-- 监听高级属性添加按钮 -->
+        $("#edit2").click(function () {
+            layer.open({
+                type: 2,
+                title: ['添加资产属性', 'font-size:20px;'],
+                id: 'edit_property_form', //防止重复弹出
+                content: '{% url "edit_property_form" %}' + "?asset_number=" + {{ asset_number }},
+                area: ["600px", "400px"],
+                maxmin: false,
+                skin: 'layui-layer-lan',
+            });
+        });
+        <!-- 监听高级属性删除按钮 -->
+        $("#edit4").click(function () {
+            layer.open({
+                type: 2,
+                title: ['编辑资产属性', 'font-size:20px;'],
+                id: 'delete_property_form', //防止重复弹出
+                content: '{% url "delete_property_form" %}' + "?asset_number=" + {{ asset_number }},
+                area: ["800px", "400px"],
+                maxmin: false,
+                skin: 'layui-layer-lan',
+            });
+        });
+        <!-- 监听生命周期编辑按钮 -->
+        $("#edit3").click(function () {
+            layer.open({
+                type: 2,
+                title: ['编辑资产生命周期信息', 'font-size:20px;'],
+                id: 'edit_lifecycle_form', //防止重复弹出
+                content: '{% url "edit_lifecycle_form" %}' + "?asset_number=" + {{ asset_number }},
+                area: ["500px", "400px"],
+                maxmin: false,
+                skin: 'layui-layer-lan',
+            });
+        })
+    })
+</script>
+</body>
+</html>

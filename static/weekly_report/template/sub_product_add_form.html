@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>运维管理平台</title>
+    <link rel="stylesheet" href="/static/myadmin/layui/css/layui.css">
+</head>
+<body>
+<div class="layui-fluid" id="add_form" style="margin-left: 15px;">
+    <form class="layui-form layui-form-pane" action="{% url 'sub_product_add' %}" method="post" id="add_form_content">
+        {% csrf_token %}
+        <div class="info"><strong style="color: red;">红色星号为必填项 *</strong></div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>产品分类</label>
+                <div class="layui-input-inline">
+                    <select name="type_name" id="type_name" lay-filter="type_name" lay-search="">
+                        <option value="">--选择产品分类--</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>产品子分类</label>
+                <div class="layui-input-block">
+                    {% if spt_record %}
+                        <input name="sub_type_name" id="sub_type_name" autocomplete="off" value="{{ spt_record.sub_type_name }}"
+                               class="layui-input" type="text" placeholder="输入产品子分类名称...">
+                    {% else %}
+                        <input name="sub_type_name" id="sub_type_name" autocomplete="off"
+                               class="layui-input" type="text" placeholder="输入产品子分类名称...">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">子分类描述</label>
+                <div class="layui-input-block">
+                    {% if spt_record.desc %}
+                        <textarea class="layui-textarea" cols="50" rows="4" name="desc" id="desc"
+                                  placeholder="选填，产品子分类详细描述...">{{ spt_record.desc }}</textarea>
+                    {% else %}
+                        <textarea class="layui-textarea" cols="50" rows="4" name="desc" id="desc"
+                                  placeholder="选填，产品子分类详细描述..."></textarea>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item" style="margin-left: 35%;">
+            {% if j_id %}
+                <button type="submit" class="layui-btn layui-btn-sm" id="add_submit">更新</button>
+            {% else %}
+                <button type="submit" class="layui-btn layui-btn-sm" id="add_submit">提交</button>
+            {% endif %}
+            <button type="reset" class="layui-btn layui-btn-sm">重置</button>
+        </div>
+    </form>
+</div>
+<script src="/static/myadmin/layui/layui.js"></script>
+<script>
+    layui.use(['form', 'table'], function () {
+        var form = layui.form,
+            $ = layui.jquery,
+            table = layui.table;
+        <!-- 动态获取产品分类信息 -->
+        $.ajax({
+            url: "{% url 'product_type_get' %}",
+            type: "get",
+            dataType: 'json',
+            success: function (d) {
+                $.each(d, function (i, v) {
+                    if ('{{ spt_record.type_name.type_name }}' === v) {
+                        $('#type_name').append("<option name='type_name' selected='selected' value='" + v + "'>" + v + "</option>");
+                    }
+                    else {
+                        $('#type_name').append("<option name='type_name' value='" + v + "'>" + v + "</option>");
+                    }
+                });
+                $('#type_name').trigger('change');
+                form.render();
+            }
+        });
+        <!-- 触发表单提交事件 -->
+        $("#add_submit").click(function () {
+            var type_name = $("#type_name").val(),
+                sub_type_name = $("#sub_type_name").val(),
+                desc = $("#desc").val();
+            if (type_name === "" || sub_type_name === "") {
+                layer.msg("请填写必填项内容");
+                return false;
+            }
+            else {
+                <!-- 如果成功触发表单提交，则获取父body的索引index，并在父页面关闭当前弹出层 -->
+                var index = parent.layer.getFrameIndex(window.name);
+                parent.layer.msg("提交成功");
+                parent.layer.close(index);
+            }
+        })
+    })
+</script>
+</body>
+</html>

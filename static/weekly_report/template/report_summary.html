@@ -1,0 +1,805 @@
+{% extends 'myadmin/base.html' %}
+
+{% block css %}
+    <style>
+        td {
+            white-space: nowrap;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="content-header">
+        <h2 class="layui-card-header" style="font-size: large;">周报数据汇总</h2>
+    </div>
+    <div class="content-breadcrumb layui-bg-gray">
+        <span class="layui-breadcrumb" lay-separator=">">
+          <a href="{% url 'index' %}">仪表板</a>
+          <a><cite>周报管理</cite></a>
+            <a><cite>周报数据汇总</cite></a>
+        </span>
+    </div>
+    <div class="layui-tab layui-tab-card" style="margin-top: 20px;" lay-filter="report_summary">
+        <ul class="layui-tab-title">
+            <li class="layui-this" lay-id="dailySummary" id="dailySummary">日报汇总</li>
+            <li lay-id="planSummary" id="planSummary">下周计划汇总</li>
+            <li lay-id="weeklySummary" id="weeklySummary">周报汇总</li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                <fieldset class="layui-elem-field">
+                    <div class="layui-field-box">
+                        <div class="layui-collapse">
+                            <div class="layui-colla-item">
+                                <h2 class="layui-colla-title">使用说明20180112</h2>
+                                <div class="layui-colla-content">
+                                    <ul>
+                                        <li>1、日报汇总提供当前用户部门下所有成员的日报记录数据；</li>
+                                        <li>2、提供日报记录筛选功能，包括日报周期、用户、工作编号的筛选；</li>
+                                        <li>3、提供对单条日报的审批操作；</li>
+                                        <li>4、支持多条件联合查询。</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset class="layui-elem-field">
+                    <div class="layui-field-box">
+                        <form class="layui-form layui-form-pane" id="search_form" style="margin-top: 10px;">
+                            <div class="layui-form-item">
+                                <div class="layui-inline">
+                                    <div class="layui-input-inline">
+                                        <select name="date_period" id="date_period" lay-filter="date_period"
+                                                lay-search="">
+                                            <option value="">--选择或搜索时间周期--</option>
+                                        </select>
+                                    </div>
+                                    <div class="layui-input-inline">
+                                        <select name="username" id="username" lay-filter="username"
+                                                lay-search="">
+                                            <option value="">--选择或搜索用户名--</option>
+                                        </select>
+                                    </div>
+                                    <div class="layui-input-inline">
+                                        <select name="job_code" id="job_code" lay-filter="job_code"
+                                                lay-search="">
+                                            <option value="">--选择或搜索工作编号--</option>
+                                        </select>
+                                    </div>
+                                    <div class="layui-input-inline">
+                                        <select name="summary_status" id="summary_status" lay-filter="summary_status"
+                                                lay-search="">
+                                            <option value="">--选择或搜索审核状态--</option>
+                                        </select>
+                                    </div>
+                                    <div class="layui-input-inline">
+                                        <select name="job_type" id="job_type" lay-filter="job_type" lay-search="">
+                                            <option value="">--选择或搜索工作类别--</option>
+                                        </select>
+                                    </div>
+                                    <button class="layui-btn layui-btn-sm" id="search" style="margin-top: 3px;">筛选
+                                    </button>
+                                    <button type="reset" class="layui-btn layui-btn-sm" id="reset_content"
+                                            style="margin-top: 3px;">重置
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <div class="layui-inline">
+                                    <button class="layui-btn layui-btn-sm layui-btn-normal" id="mark" value="access">批量通过</button>
+                                </div>
+                            </div>
+                        </form>
+                        <table id="daily_summary" lay-filter="dailySummaryTable"></table>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="layui-tab-item">
+                <div class="layui-tab-item layui-show">
+                    <fieldset class="layui-elem-field">
+                        <div class="layui-field-box">
+                            <div class="layui-collapse">
+                                <div class="layui-colla-item">
+                                    <h2 class="layui-colla-title">使用说明20180115</h2>
+                                    <div class="layui-colla-content">
+                                        <ul>
+                                            <li>1、下周计划汇总提供当前用户部门下所有成员的下周计划数据；</li>
+                                            <li>2、提供日报记录筛选功能，包括日报周期、用户的筛选；</li>
+                                            <li>3、支持多条件联合查询。</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <fieldset class="layui-elem-field">
+                        <div class="layui-field-box">
+                            <form class="layui-form layui-form-pane" id="search_form" style="margin-top: 10px;">
+                                <div class="layui-form-item">
+                                    <div class="layui-inline">
+                                        <div class="layui-input-inline">
+                                            <select name="date_period1" id="date_period1" lay-filter="date_period1"
+                                                    lay-search="">
+                                                <option value="">--选择或搜索时间周期--</option>
+                                            </select>
+                                        </div>
+                                        <div class="layui-input-inline">
+                                            <select name="username" id="username1" lay-filter="user1"
+                                                    lay-search="">
+                                                <option value="">--选择或搜索用户名--</option>
+                                            </select>
+                                        </div>
+                                        <button class="layui-btn layui-btn-sm" id="search1" style="margin-top: 3px;">筛选</button>
+                                        <button type="reset" class="layui-btn layui-btn-sm" id="reset_content1" style="margin-top: 3px;">重置</button>
+                                    </div>
+                                </div>
+                            </form>
+                            <table id="plan_summary" lay-filter="planSummaryTable"></table>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+            <div class="layui-tab-item">
+                <fieldset class="layui-elem-field">
+                    <div class="layui-field-box">
+                        <div class="layui-collapse">
+                            <div class="layui-colla-item">
+                                <h2 class="layui-colla-title">使用说明20180115</h2>
+                                <div class="layui-colla-content">
+                                    <ul>
+                                        <li>1、周报汇总将会自动汇总当前部门下所有成员的周报记录，并按照固定格式生成excel；</li>
+                                        <li>2、提供excel的导出功能；</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset class="layui-elem-field">
+                    <legend id="this_week"></legend>
+                    <div class="layui-field-box">
+                        <div class="layui-inline">
+                            <button class="layui-btn layui-btn-sm" id="export" style="margin-left: 20px;margin-top: 20px;">导出周报</button>
+                        </div>
+                        <table class="layui-table">
+                            <caption><strong style="color:black;">销售支撑及项目执行</strong></caption>
+                            <thead>
+                                <tr>
+                                    <th>项目编号</th>
+                                    <th>项目内容</th>
+                                    <th>日期</th>
+                                    <th>进展状态</th>
+                                    <th>下周计划</th>
+                                    <th>总体阶段性计划</th>
+                                    <th>特殊说明</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sell_project"></tbody>
+                        </table>
+                        <table class="layui-table">
+                            <caption>
+                                <strong style="color:black;">科研项目</strong>
+                            </caption>
+                            <thead>
+                                <tr>
+                                    <th>项目编号</th>
+                                    <th>项目内容</th>
+                                    <th>日期</th>
+                                    <th>进展状态</th>
+                                    <th>下周计划</th>
+                                    <th>总体阶段性计划</th>
+                                    <th>特殊说明</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sell_project_study"></tbody>
+                        </table>
+                        <table class="layui-table">
+                            <caption>
+                                <strong style="color:black;">产品开发类工作 </strong>
+                                <i class="layui-icon" style="color:forestgreen;" id="add_product_development">
+                                    <button class="layui-btn layui-btn-normal layui-btn-xs">&#xe654;</button>
+                                </i>
+                                <i class="layui-icon" style="color:red;" id="del_product_development">
+                                    <button class="layui-btn layui-btn-danger layui-btn-xs"> &#xe640;</button>
+                                </i>
+                            </caption>
+                            <thead>
+                            <tr>
+                                <th>产品</th>
+                                <th>子产品</th>
+                                <th>工作目标</th>
+                                <th>工作内容</th>
+                                <th>本周进展及得失总结</th>
+                                <th>下周计划</th>
+                                <th>总体阶段性计划</th>
+                                <th>特殊说明</th>
+                            </tr>
+                            </thead>
+                            <tbody id="product_development"></tbody>
+                        </table>
+                        <table class="layui-table">
+                            <caption>
+                                <strong style="color:black;">公司战略部署工作 </strong>
+                                <i class="layui-icon" style="color:forestgreen;" id="add_strategic_deployment">
+                                    <button class="layui-btn layui-btn-normal layui-btn-xs">&#xe654;</button>
+                                </i>
+                                <i class="layui-icon" style="color:red;" id="del_strategic_deployment">
+                                    <button class="layui-btn layui-btn-danger layui-btn-xs"> &#xe640;</button>
+                                </i>
+                            </caption>
+                            <thead>
+                            <tr>
+                                <th>工作名称</th>
+                                <th>工作目标</th>
+                                <th>工作内容</th>
+                                <th>本周进展及得失总结</th>
+                                <th>下周计划</th>
+                                <th>总体阶段性计划</th>
+                                <th>特殊说明</th>
+                            </tr>
+                            </thead>
+                            <tbody id="strategic_deployment"></tbody>
+                        </table>
+                        <table class="layui-table">
+                            <caption>
+                                <strong style="color:black;">团队建设 </strong>
+                                <i class="layui-icon" style="color:forestgreen;" id="add_team_building">
+                                    <button class="layui-btn layui-btn-normal layui-btn-xs">&#xe654;</button>
+                                </i>
+                                <i class="layui-icon" style="color:red;" id="del_team_building">
+                                    <button class="layui-btn layui-btn-danger layui-btn-xs"> &#xe640;</button>
+                                </i>
+                            </caption>
+                            <thead>
+                            <tr>
+                                <th>类型</th>
+                                <th>子类型</th>
+                                <th>人员</th>
+                                <th>本周进展及得失总结</th>
+                                <th>下周计划</th>
+                                <th>总体阶段性计划</th>
+                                <th>特殊说明</th>
+                            </tr>
+                            </thead>
+                            <tbody id="team_building"></tbody>
+                        </table>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <!-- 表格操作按钮 -->
+    <script type="text/html" id="audit">
+        <div class="layui-btn-group">
+            <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="audit"><i class="layui-icon">&#xe605;</i></a>
+            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="repel"><i class="layui-icon">&#x1006;</i></a>
+        </div>
+    </script>
+    <script type="text/html" id="summaryStatus">
+        <!-- 渲染表格样式，设置审核状态的颜色 -->
+        {% verbatim %}{{#  if(d.summary_status === '通过'){ }}
+            <span style="color:#32CD32;">{{ d.summary_status }}</span>
+            {{#  } else if(d.summary_status === '未审') { }}
+            <span style="color:#1E90FF;">{{ d.summary_status }}</span>
+            {{#  } else if(d.summary_status === '重提') { }}
+            <span style="color:#FF8C00;">{{ d.summary_status }}</span>
+            {{#  } else { }}
+            <span style="color:#DC143C;">{{ d.summary_status }}</span>
+        {{#  } }}{% endverbatim %}
+    </script>
+    <script>
+        layui.use(['table', 'form', 'element'], function () {
+            var table = layui.table,
+                form = layui.form,
+                element = layui.element,
+                $ = layui.jquery;
+            $("#weekly_report_nav_father").addClass("layui-nav-itemed");
+            <!-- 渲染日报记录数据表格 -->
+            table.render({
+                elem: '#daily_summary',
+                url: '{% url 'daily_summary_get' %}',
+                page: true,
+                limit: 20,
+                limits: [20, 40, 60, 80, 100],
+                id: 'daily_summary',
+                initSort: {
+                    field: 'job_date',
+                    type: 'desc'  ////排序方式  asc: 升序、desc: 降序、null: 默认排序
+                },
+                cols: [[
+                    {type: 'checkbox', fixed: 'left'},
+                    {field: 'r_id', title: 'ID', align: "center", width: 90, sort: true},
+                    {field: 'username', title: '用户名', align: "center", sort: true},
+                    {field: 'job_type', title: '工作类别', align: "center", sort: true},
+                    {field: 'job_date', title: '日期', sort: true, align: "center"},
+                    {field: 'job_code', title: '工作编号', align: "center"},
+                    {field: 'job_time', title: '工时(人/日)', sort: true, align: "center"},
+                    {field: 'job_content', title: '工作内容', align: "center"},
+                    {field: 'job_block', title: '工作阻碍', align: "center"},
+                    {field: 'job_status', title: '进度状态', align: "center"},
+                    {field: 'job_plan', title: '明日计划', align: "center"},
+                    {field: 'job_opinion', title: '审核意见', align: "center", style: "color:green;"},
+                    {field: 'summary_status', title: '审核状态', align: "center", templet: "#summaryStatus"},
+                    {field: 'remark', title: '备注说明', align: "center"},
+                    {field: 'action', fixed: 'right', title: '操作', align: 'center', toolbar: '#audit'}
+                ]]
+            });
+            <!-- 渲染下周计划数据表格 -->
+            table.render({
+                elem: '#plan_summary',
+                url: '{% url 'plan_summary_get' %}',
+                page: true,
+                limit: 20,
+                limits: [20, 40, 60, 80, 100],
+                id: 'plan_summary',
+                initSort: {
+                    field: 'job_date',
+                    type: 'desc'  ////排序方式  asc: 升序、desc: 降序、null: 默认排序
+                },
+                cols: [[
+                    {field: 'r_id', title: 'ID', align: "center", width: 100, sort: true},
+                    {field: 'username', title: '用户名', align: "center", sort: true},
+                    {field: 'job_type', title: '工作类别', align: "center", sort: true},
+                    {field: 'job_date', title: '日期', sort: true, align: "center"},
+                    {field: 'job_code', title: '工作编号', align: "center"},
+                    {field: 'job_time', title: '工时(人/日)', sort: true, align: "center"},
+                    {field: 'job_content', title: '工作内容', align: "center"},
+                    {field: 'start_date', title: '计划开始日期', sort: true, align: "center"},
+                    {field: 'start_date_r', title: '实际开始日期', sort: true, align: "center"},
+                    {field: 'end_date', title: '计划完成日期', sort: true, align: "center"},
+                    {field: 'end_date_r', title: '实际完成日期', sort: true, align: "center"},
+                    {field: 'job_status', title: '进度状态', align: "center"},
+                    {field: 'remark', title: '备注说明', align: "center"},
+                ]]
+            });
+            <!-- 触发日报搜索事件 -->
+            $("#search").click(function () {
+                $("form").submit(function (event) {
+                    event.preventDefault();
+                });
+                table.reload('daily_summary', {
+                    page: {curr: 1},
+                    where: {
+                        date_period: $("#date_period").val(),
+                        job_code: $("#job_code").val(),
+                        username: $("#username").val(),
+                        summary_status: $("#summary_status").val(),
+                        job_type: $("#job_type").val(),
+                    },
+                })
+            });
+            <!-- 触发下周计划搜索事件 -->
+            $("#search1").click(function () {
+                $("form").submit(function (event) {
+                    event.preventDefault();
+                });
+                table.reload('plan_summary', {
+                    page: {curr: 1},
+                    where: {
+                        date_period: $("#date_period1").val(),
+                        username: $("#username1").val(),
+                    },
+                })
+            });
+            <!-- 动态获取时间周期信息 -->
+            $.ajax({
+                url: "{% url 'date_period_get' %}",
+                type: "get",
+                dataType: 'json',
+                success: function (d) {
+                    $.each(d, function (i, v) {
+                        $('#date_period').append("<option name='date_period' value='" + v + "'>" + v + "</option>");
+                        $('#date_period1').append("<option name='date_period1' value='" + v + "'>" + v + "</option>");
+                    });
+                    $('#date_period').trigger('change');
+                    $('#date_period1').trigger('change');
+                    form.render();
+                }
+            });
+            <!-- 动态获取工作编号信息 -->
+            $.ajax({
+                url: "{% url 'job_code_get' %}",
+                type: "get",
+                dataType: 'json',
+                success: function (d) {
+                    $.each(d, function (i, v) {
+                        $('#job_code').append("<option name='job_code' value='" + v + "'>" + v + "</option>");
+                    });
+                    $('#job_code').trigger('change');
+                    form.render();
+                }
+            });
+            <!-- 动态获取工作类别信息 -->
+            $.ajax({
+                url: "{% url 'job_type_get' %}",
+                type: "get",
+                dataType: 'json',
+                success: function (d) {
+                    $.each(d, function (i, v) {
+                        $('#job_type').append("<option name='job_type' value='" + v + "'>" + v + "</option>");
+                    });
+                    $('#job_type').trigger('change');
+                    form.render();
+                }
+            });
+            <!-- 动态获取当前用户所属部门的全部用户名 -->
+            $.ajax({
+                url: "{% url 'username_get' %}",
+                type: "get",
+                dataType: 'json',
+                success: function (d) {
+                    $.each(d, function (i, v) {
+                        $('#username').append("<option name='username' value='" + v + "'>" + v + "</option>");
+                        $('#username1').append("<option name='username' value='" + v + "'>" + v + "</option>");
+                    });
+                    $('#username').trigger('change');
+                    $('#username1').trigger('change');
+                    form.render();
+                }
+            });
+            <!-- 获取本周周报周期 -->
+            $.ajax({
+                url: "{% url 'this_week_get' %}",
+                type: "get",
+                dataType: 'json',
+                success: function (d) {
+                    $("#this_week").text("周报汇总(" + d[0] + ")");
+                }
+            });
+            <!-- 获取日报审核状态 -->
+            $.ajax({
+                url: "{% url 'summary_status_get' %}",
+                type: "get",
+                dataType: 'json',
+                success: function (d) {
+                    $.each(d, function (i, v) {
+                        $('#summary_status').append("<option name='summary_status' value='" + v + "'>" + v + "</option>");
+                    });
+                    $('#summary_status').trigger('change');
+                    form.render();
+                }
+            });
+            <!-- 监听表格按钮事件 -->
+            table.on('tool(dailySummaryTable)', function (obj) {
+                var data = obj.data,
+                    layEvent = obj.event,
+                    tr = obj.tr;
+                if (layEvent === "audit") {
+                    layer.prompt({
+                        formType: 2,
+                        value: data.job_opinion || "审核通过",
+                        title: '审核日报',
+                        area: ["400px", "300px"],
+                    }, function (value, index, elem) {
+                        $.post('{% url "daily_report_audit" %}', {"job_opinion": value, "r_id": data.r_id, 'types': 'audit'});
+                        layer.msg("审批成功");
+                        table.reload('daily_summary');
+                        layer.close(index);
+                    })
+                }
+                else if (layEvent === "repel") {
+                    layer.prompt({
+                        formType: 2,
+                        value: data.job_opinion,
+                        title: '驳回日报',
+                        area: ["400px", "300px"],
+                    }, function (value, index, elem) {
+                        $.post('{% url "daily_report_audit" %}', {"job_opinion": value, "r_id": data.r_id, 'types': 'repel'});
+                        layer.msg("已驳回");
+                        table.reload('daily_summary');
+                        layer.close(index);
+                    })
+                }
+            });
+            <!-- 监听批量审核事件 -->
+            $("#mark").click(function () {
+                $("form").submit(function (event) {
+                    event.preventDefault();
+                });
+                var checkStatus = table.checkStatus('daily_summary');
+                var data = checkStatus.data;
+                var id_array = [];
+                $.each(data, function (index, value) {
+                    id_array.push(value.r_id);
+                });
+                if (id_array.length === 0) {
+                    layer.msg("没有选中任何记录");
+                }
+                else {
+                    layer.confirm(
+                        "确定批量审核所选数据吗？",
+                        {icon: 1,},
+                        function (index) {
+                            layer.load();
+                            $.ajax({
+                                url: '{% url "daily_report_audit_batch" %}',
+                                data: {
+                                    "id_data": JSON.stringify(id_array),
+                                },
+                                type: 'post',
+                                dataType: 'json',
+                                async: false,
+                            });
+                            layer.closeAll("loading");
+                            layer.close(index);
+                            layer.msg("批量审核完成");
+                            table.reload('daily_summary');
+                        }
+                    );
+                }
+            });
+            <!-- 删除产品开发类记录 -->
+            $("#del_product_development").click(function () {
+                layer.open({
+                    type: 2,
+                    title: ['删除产品研发类工作', 'font-size:20px;'],
+                    id: 'addProductDevelopment', //防止重复弹出
+                    content: '{% url "product_development_table" %}',
+                    area: ["1000px", "500px"],
+                    skin: 'layui-layer-lan',
+                    end: function () {
+                        summary()
+                    }
+                });
+            });
+            <!-- 添加产品开发类工作 -->
+            $("#add_product_development").click(function () {
+                layer.open({
+                    type: 2,
+                    title: ['添加产品研发类工作', 'font-size:20px;'],
+                    id: 'addProductDevelopment', //防止重复弹出
+                    content: '{% url "product_development_add_form" %}',
+                    area: ["1000px", "500px"],
+                    skin: 'layui-layer-lan',
+                    end: function () {
+                        summary()
+                    }
+                });
+            });
+            <!-- 删除公司战略部署记录 -->
+            $("#del_strategic_deployment").click(function () {
+                layer.open({
+                    type: 2,
+                    title: ['删除公司战略部署记录', 'font-size:20px;'],
+                    id: 'delStrategicDeployment', //防止重复弹出
+                    content: '{% url "strategic_deployment_delete_table" %}',
+                    area: ["1000px", "500px"],
+                    skin: 'layui-layer-lan',
+                    end: function () {
+                        summary()
+                    }
+                });
+            });
+            <!-- 添加公司战略部署记录 -->
+            $("#add_strategic_deployment").click(function () {
+                layer.open({
+                    type: 2,
+                    title: ['添加公司战略部署记录', 'font-size:20px;'],
+                    id: 'addStrategicDeployment', //防止重复弹出
+                    content: '{% url "strategic_deployment_add_form" %}',
+                    area: ["1000px", "500px"],
+                    skin: 'layui-layer-lan',
+                    end: function () {
+                        summary()
+                    }
+                });
+            });
+            <!-- 删除团队建设记录 -->
+            $("#del_team_building").click(function () {
+                layer.open({
+                    type: 2,
+                    title: ['删除公司战略部署记录', 'font-size:20px;'],
+                    id: 'delTeamBuilding', //防止重复弹出
+                    content: '{% url "team_building_delete_table" %}',
+                    area: ["1000px", "500px"],
+                    skin: 'layui-layer-lan',
+                    end: function () {
+                        summary()
+                    }
+                });
+            });
+            <!-- 添加团队建设记录 -->
+            $("#add_team_building").click(function () {
+                layer.open({
+                    type: 2,
+                    title: ['添加公司战略部署记录', 'font-size:20px;'],
+                    id: 'addTeamBuilding', //防止重复弹出
+                    content: '{% url "team_building_add_form" %}',
+                    area: ["1000px", "500px"],
+                    skin: 'layui-layer-lan',
+                    end: function () {
+                        summary()
+                    }
+                });
+            });
+            <!-- 填充周报汇总表格 -->
+            var summary = function () {
+                $.ajax({  //填充销售及项目表格
+                    type: 'get',
+                    dataType: 'json',
+                    url: '{% url "sell_project_get" %}',
+                    success: function (data) {
+                        var h = '';
+                        if (data.length === 0) {
+                            h += '<tr><td colspan="7" align="center">暂无数据</td></tr>';
+                        } else {
+                            $.each(data, function (k, v) {
+                                h += '<tr>' +
+                                    '<td title="' + v.job_code + '">' + v.job_code + '</td>' +
+                                    '<td title="' + v.project_content + '">' + v.project_content + '</td>' +
+                                    '<td title="' + v.job_date + '">' + v.job_date + '</td>' +
+                                    '<td title="' + v.job_status + '">' + v.job_status + '</td>' +
+                                    '<td title="' + v.next_week_plan + '">' + v.next_week_plan + '</td>' +
+                                    '<td title="' + v.stage_plan + '">' + v.stage_plan + '</td>' +
+                                    '<td title="' + v.remark + '">' + v.remark + '</td>' +
+                                    '</tr>'
+                            });
+                        }
+                        $("#sell_project").html(h);
+                    }
+                });
+                $.ajax({  //填充科研项目表格
+                    type: 'get',
+                    dataType: 'json',
+                    data: {"types": "study"},  //传递请求类型，后端进行数据筛选
+                    url: '{% url "sell_project_get" %}',
+                    success: function (data) {
+                        var h = '';
+                        if (data.length === 0) {
+                            h += '<tr><td colspan="7" align="center">暂无数据</td></tr>';
+                        } else {
+                            $.each(data, function (k, v) {
+                                h += '<tr>' +
+                                    '<td title="' + v.job_code + '">' + v.job_code + '</td>' +
+                                    '<td title="' + v.project_content + '">' + v.project_content + '</td>' +
+                                    '<td title="' + v.job_date + '">' + v.job_date + '</td>' +
+                                    '<td title="' + v.job_status + '">' + v.job_status + '</td>' +
+                                    '<td title="' + v.next_week_plan + '">' + v.next_week_plan + '</td>' +
+                                    '<td title="' + v.stage_plan + '">' + v.stage_plan + '</td>' +
+                                    '<td title="' + v.remark + '">' + v.remark + '</td>' +
+                                    '</tr>'
+                            });
+                        }
+                        $("#sell_project_study").html(h);
+                    }
+                });
+                $.ajax({  //填充产品开发类表格
+                    type: 'get',
+                    dataType: 'json',
+                    url: '{% url "product_development_get" %}',
+                    success: function (data) {
+                        var h = '';
+                        if (data.length === 0) {
+                            h += '<tr><td colspan="8" align="center">暂无数据</td></tr>';
+                        } else {
+                            $.each(data, function (k, v) {
+                                h += '<tr>' +
+                                    '<td title="' + v.product + '">' + v.product + '</td>' +
+                                    '<td title="' + v.sub_product + '">' + v.sub_product + '</td>' +
+                                    '<td title="' + v.job_goal + '">' + v.job_goal + '</td>' +
+                                    '<td title="' + v.job_content + '">' + v.job_content + '</td>' +
+                                    '<td title="' + v.summarize + '">' + v.summarize + '</td>' +
+                                    '<td title="' + v.next_week_plan + '">' + v.next_week_plan + '</td>' +
+                                    '<td title="' + v.stage_plan + '">' + v.stage_plan + '</td>' +
+                                    '<td title="' + v.remark + '">' + v.remark + '</td>' +
+                                    '</tr>'
+                            });
+                        }
+                        $("#product_development").html(h);
+                    }
+                });
+                $.ajax({  //填充团队建设表格
+                    type: 'get',
+                    dataType: 'json',
+                    url: '{% url "team_building_get" %}',
+                    success: function (data) {
+                        var h = '';
+                        if (data.length === 0) {
+                            h += '<tr><td colspan="7" align="center">暂无数据</td></tr>';
+                        } else {
+                            $.each(data, function (k, v) {
+                                h += '<tr>' +
+                                    '<td title="' + v.build_type + '">' + v.build_type + '</td>' +
+                                    '<td title="' + v.sub_type + '">' + v.sub_type + '</td>' +
+                                    '<td title="' + v.people + '">' + v.people + '</td>' +
+                                    '<td title="' + v.summarize + '">' + v.summarize + '</td>' +
+                                    '<td title="' + v.next_week_plan + '">' + v.next_week_plan + '</td>' +
+                                    '<td title="' + v.stage_plan + '">' + v.stage_plan + '</td>' +
+                                    '<td title="' + v.remark + '">' + v.remark + '</td>' +
+                                    '</tr>'
+                            });
+                        }
+                        $("#team_building").html(h);
+                    }
+                });
+                $.ajax({  //填充公司战略部署表格
+                    type: 'get',
+                    dataType: 'json',
+                    url: '{% url "strategic_deployment_get" %}',
+                    success: function (data) {
+                        var h = '';
+                        if (data.length === 0) {
+                            h += '<tr><td colspan="7" align="center">暂无数据</td></tr>';
+                        } else {
+                            $.each(data, function (k, v) {
+                                h += '<tr>' +
+                                    '<td title="' + v.job_name + '">' + v.job_name + '</td>' +
+                                    '<td title="' + v.job_goal + '">' + v.job_goal + '</td>' +
+                                    '<td title="' + v.job_content + '">' + v.job_content + '</td>' +
+                                    '<td title="' + v.summarize + '">' + v.summarize + '</td>' +
+                                    '<td title="' + v.next_week_plan + '">' + v.next_week_plan + '</td>' +
+                                    '<td title="' + v.stage_plan + '">' + v.stage_plan + '</td>' +
+                                    '<td title="' + v.remark + '">' + v.remark + '</td>' +
+                                    '</tr>'
+                            });
+                        }
+                        $("#strategic_deployment").html(h);
+                    }
+                });
+            };
+            summary();
+            <!-- tab选项卡hash定位 -->
+            var layid = location.hash.replace(/^#report_summary=/, '');
+            element.tabChange('report_summary', layid);
+            element.on('tab(report_summary)', function () {
+                location.hash = 'report_summary='+ $(this).attr('lay-id');
+            });
+            <!-- 监听选项卡切换 -->
+            $("#dailySummary").click(function () {
+                table.reload("daily_summary")
+            });
+            $("#planSummary").click(function () {
+                table.reload("plan_summary")
+            });
+            $("#weeklySummary").click(function () {
+                summary()
+            });
+            <!-- 周报导出 -->
+            $("#export").click(function () {
+                $.ajax({
+                    url: "{% url 'date_period_get' %}",
+                    type: "get",
+                    dataType: "json",
+                    success: function (d) {
+                        var url = '{% url "export_weekly_report" %}';
+                        var h = '<form class="layui-form layui-form-pane" action="' + url + '" method="post" style="margin-top: 40px;"><div class="layui-form-item">' +
+                            '<div class="layui-inline" style="margin-left: 40px;"><select name="date_period2" id="date_period2" lay-filter="date_period2" lay-search="">' +
+                            '<option value="">--选择或搜索日报周期--</option>';
+                        var option = '';
+                        $.each(d, function (i, v) {
+                            option += "<option name='date_period2' value='" + v + "'>" + v + "</option>";
+                        });
+                        h = h + option + '</select></div><div class="layui-inline layui-hide" style="margin-top: 40px;margin-left: 80px;"><button type="submit" class="layui-btn" id="export_button">导出</button>' +
+                            '<button class="layui-btn" id="reset" type="reset">重置</button></div></div></form>';
+                        layer.open({
+                            type: 1,
+                            title: '选择导出日报周期',
+                            id: 'DatePeriod',
+                            skin: 'layui-layer-lan',
+                            area: ["300px", "300px"],
+                            content: h,
+                            btn: ["导出"],
+                            success: function () {
+                                form.render();
+                            },
+                            yes: function (index, layero) {
+                                var date_period = $("#date_period2").val();
+                                if (date_period === "") {
+                                    layer.msg("请选择需要导出的日报周期!");
+                                }
+                                else {
+                                    $("#export_button").trigger('click');
+                                    layer.close(index);
+                                }
+                            }
+                        });
+                    }
+                })
+            })
+        })
+    </script>
+{% endblock %}

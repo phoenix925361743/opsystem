@@ -1,0 +1,393 @@
+{% extends 'myadmin/base.html' %}
+
+{% block content %}
+    <div class="content-header">
+        <h2 class="layui-card-header" style="font-size: large;">部门资产管理</h2>
+    </div>
+    <div class="content-breadcrumb layui-bg-gray">
+        <span class="layui-breadcrumb" lay-separator=">">
+          <a href="{% url 'index' %}"><i class="layui-icon">&#xe68e;</i> 仪表板</a>
+          <a><cite>资产管理</cite></a>
+            <a><cite>部门资产管理</cite></a>
+        </span>
+    </div>
+    <div class="layui-tab" lay-filter="asset_manage" lay-allowclose="true">
+        <ul class="layui-tab-title">
+            <li class="layui-this" id="departAssetManage" lay-id="departAssetManage">部门资产管理</li>
+            {% if "超级管理员" in role %}
+                <li id="auditAssetRecord" lay-id="auditAssetRecord">资产记录审核</li>
+            {% endif %}
+        </ul>
+        <br/>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                <div class="tips">
+                    <div class="layui-collapse layui-field-box" lay-accordion="">
+                        <div class="layui-colla-item">
+                            <h2 class="layui-colla-title">使用说明-2018/04/19</h2>
+                            <div class="layui-colla-content">
+                                <ul>
+                                    <li>1、展示部门资产的相关信息；</li>
+                                    <li>2、支持部门资产的使用申请。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                    <fieldset class="layui-elem-field">
+                        <legend>部门资产</legend>
+                        <br/>
+                        <form class="layui-form layui-form-pane" id="search_form" style="margin-top: 15px;">
+                            <div class="layui-form-item" style="margin-left: 10px;">
+                                <div class="layui-inline">
+                                    <input name="asset_number" id="asset_number" autocomplete="off"
+                                           placeholder="输入资产编号..." class="layui-input" type="number">
+                                </div>
+                                <div class="layui-inline">
+                                    <input name="asset_name" id="asset_name" autocomplete="off"
+                                           placeholder="输入资产名称..." class="layui-input" type="text">
+                                </div>
+                                <div class="layui-inline">
+                                    <select name="person" id="person" lay-verify="person" lay-search="">
+                                        <option value="">--选择或搜索使用者--</option>
+                                    </select>
+                                </div>
+                                <div class="layui-inline">
+                                    <button type="button" class="layui-btn" id="search">搜索</button>
+                                    <button class="layui-btn" id="reset" type="reset">重置</button>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="layui-field-box">
+                            {% if "超级管理员" in role %}
+                                <div class="layui-field-box">
+                                    <div class="layui-btn-group">
+                                        <div style="margin-bottom: 0;">
+                                            <button id="add_asset" data-method="add_asset"
+                                                    class="layui-btn layui-btn-sm">添加
+                                            </button>
+                                            <button id="add_depart_asset_batch" data-method="add_depart_asset_batch"
+                                                    class="layui-btn layui-btn-sm layui-btn-normal">批量
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            <table id="depart_asset_table" lay-filter="departAssetTable"></table>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+            {% if "超级管理员" in role %}
+                <div class="layui-tab-item">
+                <div class="tips">
+                    <div class="layui-collapse layui-field-box" lay-accordion="">
+                        <div class="layui-colla-item">
+                            <h2 class="layui-colla-title">使用说明-2018/04/26</h2>
+                            <div class="layui-colla-content">
+                                <ul>
+                                    <li>1、用于超级管理员审核资产申请记录</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                    <fieldset class="layui-elem-field">
+                        <legend>资产记录审核</legend>
+                        <br/>
+                        <div class="layui-field-box">
+                            <table id="asset_record_table" lay-filter="assetRecordTable"></table>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <!-- 表格操作按钮 -->
+    <script type="text/html" id="action1Table">
+        <div class="layui-btn-group">
+            <a class="layui-btn layui-btn-xs layui-btn-primary" lay-event="detail">查看</a>
+            <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="apply">申请</a>
+        </div>
+    </script>
+    <!-- 表格操作按钮 -->
+    <script type="text/html" id="action2Table">
+        <div class="layui-btn-group">
+            <a class="layui-btn layui-btn-xs" lay-event="edit"><i class="layui-icon">&#xe642;</i></a>
+            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon">&#xe640;</i></a>
+        </div>
+    </script>
+    <!-- 渲染表格样式 -->
+    <script type="text/html" id="useType">
+        {% verbatim %}
+            {{#  if(d.use_type === '闲置'){ }}
+            <span style="color:#32CD32;">{{ d.use_type }}</span>
+            {{#  } else if(d.use_type === '归还') { }}
+            <span style="color:#1E90FF;">{{ d.use_type }}</span>
+            {{#  } else if(d.use_type === '借出') { }}
+            <span style="color:#DC143C;">{{ d.use_type }}</span>
+            {{#  } else if(d.use_type === '申请中') { }}
+            <span style="color:#58bace">{{ d.use_type }}</span>
+            {{#  } else if(d.use_type === '损坏') { }}
+            <span style="color:#2b2b2b">{{ d.use_type }}</span>
+            {{#  } else if(d.use_type === '领用') { }}
+            <span style="color:#6ec274">{{ d.use_type }}</span>
+            {{#  } else { }}
+            <span style="color:#585858;">{{ d.use_type }}</span>
+            {{#  } }}
+        {% endverbatim %}
+    </script>
+    <!-- 渲染表格样式 -->
+    <script type="text/html" id="statusTpl">
+        {% verbatim %}
+            <input type="checkbox" name="status" lay-skin="switch" lay-text="通过|未审" value="{{ d.id }}"
+                   lay-filter="status" {{ d.status == true ? 'checked' : '' }}>
+        {% endverbatim %}
+    </script>
+    <script>
+        layui.use(["table", "form", "layer", "element", "upload"], function () {
+            var table = layui.table,
+                $ = layui.jquery,
+                layer = layui.layer,
+                element = layui.element,
+                upload = layui.upload,
+                form = layui.form;
+            <!-- 手动展开导航栏 -->
+            $("#asset_nav_father").addClass("layui-nav-itemed");
+            <!-- 获取用户名 -->
+            $.ajax({
+                url: "{% url 'username_get' %}",
+                type: "get",
+                dataType: 'json',
+                success: function (d) {
+                    $.each(d, function (i, v) {
+                        $('#person').append("<option name='person' value='" + v + "'>" + v + "</option>");
+                    });
+                    $('#person').trigger('change');
+                    form.render();
+                }
+            });
+            <!-- 渲染部门资产表格 -->
+            table.render({
+                elem: '#depart_asset_table',
+                url: '{% url 'depart_asset_get' %}',
+                page: true,
+                limit: 20,
+                limits: [20, 40, 60, 80, 100],
+                id: 'departAssetTable',
+                cols: [[
+                    {field: 'asset_number', title: '资产编号', sort: true, align: "center"},
+                    {field: 'name', title: '资产名称', align: "center"},
+                    {field: 'person', title: '使用者', align: "center"},
+                    {field: 'create_time', title: '创建时间', align: "center"},
+                    {field: 'use_type', title: '状态', align: "center", templet: "#useType"},
+                    {field: 'desc', title: '资产描述', align: "center"},
+                    {field: 'action1', title: '动作', align: "center", width: 110, toolbar: '#action1Table'},
+                    {% if "超级管理员" in role %}
+                        {field: 'action2', fixed: 'right', title: '操作', width: 110, align: 'center', toolbar: '#action2Table'},
+                    {% endif %}
+                ]]
+            });
+            <!-- 渲染资产记录审核表格 -->
+            table.render({
+                elem: '#asset_record_table',
+                url: '{% url 'asset_record_get' %}',
+                page: true,
+                limit: 20,
+                limits: [20, 40, 60, 80, 100],
+                id: 'assetRecordTable',
+                cols: [[
+                    {field: 'id', title: 'ID', sort: true, align: "center"},
+                    {field: 'asset_number', title: '资产编号', align: "center"},
+                    {field: 'person', title: '申请人', align: "center"},
+                    {field: 'record_time', title: '申请时间', align: "center"},
+                    {field: 'use_type', title: '申请类型', align: "center", templet: "#useType"},
+                    {field: 'desc', title: '申请说明', align: "center"},
+                    {field: 'status', title: '审核状态', align: "center", templet: "#statusTpl"},
+                ]]
+            });
+            <!-- 监听灌装状态切换 -->
+            form.on('switch(status)', function (obj) {
+                $.ajax({
+                    url: "{% url 'asset_record_switch' %}",
+                    type: "post",
+                    dataType: "text",
+                    data: {
+                        "status": obj.elem.checked,
+                        "r_id": this.value,  //锁定数据用
+                    },
+                    success: function (d) {
+                        if (d === "ok") {
+                            table.reload("assetRecordTable");
+                        }
+                        else {
+                            layer.msg(d)
+                        }
+                    }
+                })
+            });
+            <!-- 搜索重载部门资产表格 -->
+            $("#search").click(function () {
+                table.reload('departAssetTable', {
+                    page: {curr: 1},
+                    where: {
+                        asset_name: $("#asset_name").val(),
+                        person: $("#person").val(),
+                        asset_number: $("#asset_number").val(),
+                    }
+                })
+            });
+            <!-- 添加部门资产 -->
+            $("#add_asset").click(function () {
+                layer.open({
+                    type: 2,
+                    title: ['添加部门资产', 'font-size:20px;'],
+                    id: 'depart_asset_add_form', //防止重复弹出
+                    content: '{% url "depart_asset_add_form" %}',
+                    area: ["500px", "400px"],
+                    maxmin: false,
+                    skin: 'layui-layer-lan',
+                    end: function () {
+                        table.reload('departAssetTable');
+                    },
+                });
+            });
+            <!-- 监听部门资产表格按钮 -->
+            table.on('tool(departAssetTable)', function (obj) {
+                var data = obj.data,
+                    layEvent = obj.event,
+                    tr = obj.tr;
+                if (layEvent === 'edit') {
+                    layer.open({
+                        type: 2,
+                        title: ['编辑资产信息', 'font-size:20px;'],
+                        id: 'edit_depart_asset_form', //防止重复弹出
+                        content: '{% url "depart_asset_add_form" %}' + "?asset_number=" + data.asset_number,
+                        area: ["500px", "400px"],
+                        maxmin: false,
+                        skin: 'layui-layer-lan',
+                        end: function () {
+                            table.reload('departAssetTable');
+                        },
+                    });
+                }
+                else if (layEvent === 'del') {
+                    layer.confirm(
+                        '确定彻底删除' + data.asset_number + '这条记录吗？删除之后无法复原哦!',
+                        {
+                            icon: 2,
+                            title: "彻底删除" + data.asset_number + "?"
+                        },
+                        function (index) {
+                            $.post('{% url 'depart_asset_delete' %}' + "?asset_number=" + data.asset_number);
+                            obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                            layer.msg("删除完毕");
+                            layer.close(index);
+                        }
+                    );
+                }
+                else if (layEvent === 'detail') {
+                    var d_src = '<iframe frameborder="0" scrolling="yes" width="100%" height="1800" src="'+
+                        "{% url 'depart_asset_detail' %}" + "?asset_number=" + data.asset_number +'"></iframe>';
+                    element.tabAdd("asset_manage", {
+                        title: "资产记录-" + data.asset_number,
+                        content: d_src,
+                        id: data.asset_number,
+                    });  //动态增加一个tab
+                    element.render('tab');
+                    element.tabChange("asset_manage", data.asset_number); //tab跳转
+                }
+                else if (layEvent === "apply") {
+                    if (data.use_type === "闲置") {
+                        layer.open({
+                            type: 2,
+                            title: ['提交申请记录', 'font-size:20px;'],
+                            id: 'apply_add', //防止重复弹出
+                            content: '{% url "apply_add_form" %}' + "?asset_number=" + data.asset_number,
+                            area: ["500px", "500px"],
+                            maxmin: false,
+                            skin: 'layui-layer-lan',
+                            end: function () {
+                                table.reload('departAssetTable');
+                            },
+                        });
+                    }
+                    else {
+                        if (data.use_type === "借出") {
+                            if (data.person === "{{ user.username }}") {
+                                layer.open({
+                                    type: 2,
+                                    title: ['提交申请记录', 'font-size:20px;'],
+                                    id: 'apply_add', //防止重复弹出
+                                    content: '{% url "apply_add_form" %}' + "?asset_number=" + data.asset_number,
+                                    area: ["500px", "500px"],
+                                    maxmin: false,
+                                    skin: 'layui-layer-lan',
+                                    end: function () {
+                                        table.reload('departAssetTable');
+                                    },
+                                });
+                            }
+                            else {
+                                layer.msg("该资产处于借出状态，且你不是借出人，无法进行申请操作!")
+                            }
+                        }
+                        else if (data.use_type === "申请中") {
+                            layer.msg("该资产处于申请中的状态，请等待或联系管理员处理!")
+                        }
+                        else if (data.use_type === "损坏") {
+                            layer.msg("该资产已经损坏，无法提供申请操作!")
+                        }
+                        else if (data.use_type === "领用") {
+                            layer.msg("该资产已经被领用，无法提供申请操作!")
+                        }
+                        else {
+                            layer.msg("未知的状态，请检查代码!")
+                        }
+                    }
+                }
+            });
+            <!-- 批量添加部门资产 -->
+            upload.render({
+                elem: '#add_depart_asset_batch',
+                url: '{% url "depart_asset_add_batch" %}',
+                accept: 'file', //普通文件
+                exts: 'csv', //只允许上传csv文件
+                field: 'depart_asset_csv', //上传文件域的字段名
+                before: function (obj) {
+                    layer.load(2); //上传文件并等待处理的加载样式
+                },
+                done: function (data) {
+                    layer.closeAll("loading");
+                    var msg = "处理完毕，" + data.success_count + "条数据创建成功，" + data.error_count + "条数据创建失败!";
+                    if (data.error_count !== 0) {
+                        msg += "创建失败的内容为" + data.error_data + "!"
+                    }
+                    layer.alert(msg);
+                    table.reload("departAssetTable")
+                },
+                error: function (index, upload) {
+                    layer.closeAll("loading");
+                    layer.msg("处理失败")
+                }
+            });
+            <!-- 点击tab自动刷新数据表格 -->
+            $("#departAssetManage").click(function () {
+                table.reload("departAssetTable");
+            });
+            $("#auditAssetRecord").click(function () {
+                table.reload("assetRecordTable");
+            });
+            <!-- 监听选项卡切换 -->
+            var layid = location.hash.replace(/^#asset_manage=/, '');
+            element.tabChange('asset_manage', layid);
+            element.on('tab(asset_manage)', function () {
+                location.hash = 'asset_manage=' + $(this).attr('lay-id');
+            });
+        })
+    </script>
+{% endblock %}

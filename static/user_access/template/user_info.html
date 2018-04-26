@@ -1,0 +1,192 @@
+{% extends "myadmin/media/base.html" %}
+{% block css %}
+    <style>
+        h4 {
+            color: cornflowerblue;
+            margin-top: 68px;
+        }
+
+        label {
+            color: black;
+            font-size: 16px;
+        }
+    </style>
+{% endblock %}
+{% block body-content %}
+    <div class="page-header" style="font-size: large;">
+        <h4>基本信息</h4>
+        <div id="user_name">
+            <label>用户名:</label><br/>
+            <span>{{ user_info.username }}</span>
+        </div>
+        <div id="pass">
+            <label>密码:</label><br/>
+            <p>
+                <span>********</span>
+                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#change_pass">
+                    更改
+                </button>
+            </p>
+        </div>
+        <div id="email">
+            <label>邮箱地址:</label><br/>
+            <span>{{ user_info.email }}</span>
+        </div>
+        <div id="create_time">
+            <label>账号创建时间:</label><br/>
+            <span>{{ user_info.create_time }}</span>
+        </div>
+        <div id="last_login">
+            <label>最后在线时间:</label><br/>
+            <span id="lastLogin">
+            {{ user_info.loginrecord_set.filter.0.login_time|date:"Y/m/d H:i:s" }}
+            --- {{ user_info.loginrecord_set.filter.0.login_exit_time|date:"Y/m/d H:i:s" }}
+            </span>
+            <div id="record"></div>
+            <button type="button" class="btn btn-primary btn-sm" id="show">查看全部</button>
+        </div>
+        <div id="login_ip">
+            <label>最后在线IP:</label><br/>
+            <span>{{ user_info.loginrecord_set.filter.0.login_ip|default:"" }}</span>
+        </div>
+    </div>
+    <div class="page-header">
+        <h4>高级信息</h4>
+        <label>昵称:</label>
+        <p>{{ user_profile.nickname|default_if_none:"" }}</p>
+        <label>性别:</label>
+        <p>{{ user_profile.sex|default_if_none:"" }}</p>
+        <label>头像:</label>
+        <p><img src="{{ user_profile.avatar.url }}" width="100"></p>
+{#        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modify">修改</button>#}
+    </div>
+    <!-- 修改密码的模态框 -->
+    <div class="modal fade" id="change_pass" tabindex="-1" role="dialog" aria-labelledby="change_passLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        <span style="color: red;">x</span>
+                    </button>
+                    <h4 class="modal-title" id="#change_passLabel">修改密码</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="oldPass" class="control-label">原密码:</label>
+                        <input type="password" class="form-control" id="oldPass" name="oldPass" placeholder="请输入原密码"/>
+                        <label for="newPass1" class="control-label">新密码:</label>
+                        <input type="password" class="form-control" id="newPass1" name="newPass1" placeholder="请输入新密码"/>
+                        <label for="newPass2" class="control-label">确认密码:</label>
+                        <input type="password" class="form-control" id="newPass2" name="newPass2"
+                               placeholder="请再次输入新密码"/>
+                        <span id="warning">{{ message }}</span>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" id="submit" class="btn btn-primary">确认修改</button>
+                        <button type="reset" id="resets" class="btn btn-warning">重置输入</button>
+                        {#                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>#}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 修改个性信息的模态框 -->
+{#    <div class="modal fade" id="modify" tabindex="-1" role="dialog" aria-labelledby="modifyLabel"#}
+{#         aria-hidden="true">#}
+{#        <div class="modal-dialog">#}
+{#            <div class="modal-content">#}
+{#                <div class="modal-header">#}
+{#                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">#}
+{#                        <span style="color: red;">x</span>#}
+{#                    </button>#}
+{#                    <h4 class="modal-title" id="#modifyLabel">修改个性信息</h4>#}
+{#                </div>#}
+{#                <div class="modal-body">#}
+{#                    <div class="form-group">#}
+{#                        <label for="nickname" class="control-label">昵称:</label>#}
+{#                        <input type="text" class="form-control" id="nickname" name="nickname" placeholder="请输入昵称"/>#}
+{#                        <label for="性别" class="control-label">性别:</label>#}
+{#                        <input type="password" class="form-control" id="newPass1" name="newPass1" placeholder="请输入新密码"/>#}
+{#                        <label for="newPass2" class="control-label">确认密码:</label>#}
+{#                        <input type="password" class="form-control" id="newPass2" name="newPass2"#}
+{#                               placeholder="请再次输入新密码"/>#}
+{#                        <span id="warning">{{ message }}</span>#}
+{#                    </div>#}
+{#                    <div class="modal-footer">#}
+{#                        <button type="submit" id="submit" class="btn btn-primary">确认修改</button>#}
+{#                        <button type="reset" id="resets" class="btn btn-warning">重置输入</button>#}
+                        {#                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{% endblock %}
+{% block js %}
+    <script>
+        $(document).ready(function () {
+            $("#submit").click(function () {
+                var oldpass = $("#oldPass").val();
+                var newpass1 = $("#newPass1").val();
+                var newpass2 = $("#newPass2").val();
+                if (newpass1 === "" || newpass2 === "" || oldpass === "") {
+                    $("#warning").html("<font color='red'>输入的密码不能为空,请重新输入！</font>");
+                    $("form").submit(function (event) {
+                        event.preventDefault();
+                    })
+                }
+                else {
+                    if (newpass1 === newpass2) {
+                        $.ajax({
+                            url: "{% url 'change_pass' %}",
+                            data: {
+                                'old_pass': oldpass,
+                                'new_pass': newpass1
+                            },
+                            type: "post",
+                            dataType: "json",
+                            success: function (ret) {
+                                if (ret.code === "0") {
+                                    $("#warning").html("<font color='red'>输入原密码校验失败,请确定后重新输入！</font>");
+                                }
+                                else {
+                                    $("#warning").html("<font color='blue'>密码修改成功，请重新登录！</font>");
+                                    setTimeout("$(location).prop('href', "{% url 'logout' %}')", 1000);
+                                }
+                            }
+                        })
+                }
+                    else {
+                        $("#warning").html("<font color='red'>输入的密码不一致,请重新输入！</font>");
+                        $("form").submit(function (event) {
+                            event.preventDefault();
+                        })
+                    }
+                }
+            });
+            <!-- 重置输入框内容 -->
+            $("#resets").click(function () {
+                $("#warning").html("");
+                $("#oldPass").val("");
+                $("#newPass1").val("");
+                $("#newPass2").val("");
+            });
+            <!-- 获取全部登录记录 -->
+            $("#show").click(function () {
+                $.ajax({
+                    url: "{% url 'show_record' %}",
+                    type: "get",
+                    dataType: "json",
+                    success: function (ret) {
+                        $("#lastLogin").remove();
+                        $("#record").html(ret.code.replace(/\'/g, ""))
+                    }
+                })
+            });
+{#            $("#del").click(function () {#}
+{#                var confirms = window.confirm("删除账号后，账号信息将会被全部清除")#}
+{#            })#}
+        })
+    </script>
+{% endblock %}

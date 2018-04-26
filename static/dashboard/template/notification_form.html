@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>运维管理平台</title>
+    <link rel="stylesheet" href="/static/myadmin/layui/css/layui.css">
+</head>
+<body>
+<div id="search_form" style="margin-left: 15px;margin-top: 10px;">
+    <form class="layui-form layui-form-pane" id="search_form">
+        {% csrf_token %}
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <div class="layui-input-inline">
+                    <select name="read_status" id="read_status" lay-filter="read_status" lay-search="">
+                        <option value="">--选择阅读状态--</option>
+                        <option value="True">已读</option>
+                        <option value="False">未读</option>
+                    </select>
+                </div>
+                <div class="layui-input-inline">
+                    <select name="level" id="level" lay-filter="send_user" lay-search="">
+                        <option value="">--选择或搜索信息级别--</option>
+                    </select>
+                </div>
+                <div class="layui-input-inline">
+                    <input name="send_user" id="send_user" autocomplete="off" class="layui-input"
+                                           type="text" placeholder="输入发送人姓名...">
+                </div>
+                <div class="layui-input-inline">
+                    <input name="message" id="message" autocomplete="off" class="layui-input"
+                                           type="text" placeholder="输入信息内容...">
+                </div>
+                <button class="layui-btn layui-btn-sm" id="search" style="margin-top: 3px;">筛选</button>
+                <button type="reset" class="layui-btn layui-btn-sm" style="margin-top: 3px;">重置</button>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <button class="layui-btn layui-btn-sm layui-btn-danger" id="delete">删除选中行</button>
+            </div>
+            <div class="layui-inline">
+                <button class="layui-btn layui-btn-sm layui-btn-green" id="mark">标记选中为已读</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+<table id="notification_table" lay-filter="notificationTable"></table>
+
+<script src="/static/myadmin/layui/layui.js"></script>
+<!-- 表格操作按钮 -->
+<script type="text/html" id="actionTable">
+    <div class="layui-btn-group">
+        <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="detail">查看</a>
+    </div>
+</script>
+<script type="text/html" id="readStatus">
+    <!-- 渲染表格样式，设置值为未读的表格元素字体颜色为红色 -->
+    {% verbatim %}{{#  if(d.read_status === '未读'){ }}{% endverbatim %}
+    <span style="color:red;">{% verbatim %}{{ d.read_status }}{% endverbatim %}</span>
+    {% verbatim %}{{#  } else { }}{% endverbatim %}
+    {% verbatim %}{{ d.read_status }}{% endverbatim %}
+    {% verbatim %}{{#  } }}{% endverbatim %}
+</script>
+<script type="text/html" id="levelTpl">
+    <!-- 渲染表格样式，设置消息等级的颜色 -->
+    {% verbatim %}{{#  if(d.level === 'INFO'){ }}{% endverbatim %}
+    <span style="color:#32CD32;">{% verbatim %}{{ d.level }}{% endverbatim %}</span>
+    {% verbatim %}{{#  } else if(d.level === 'NOTICE') { }}{% endverbatim %}
+    <span style="color:#1E90FF;">{% verbatim %}{{ d.level }}{% endverbatim %}</span>
+    {% verbatim %}{{#  } else { }}{% endverbatim %}
+    <span style="color:#DC143C;">{% verbatim %}{{ d.level }}{% endverbatim %}</span>
+    {% verbatim %}{{#  } }}{% endverbatim %}
+</script>
+<script>
+    layui.use(['table', 'form', 'element'], function () {
+        var table = layui.table,
+            form = layui.form,
+            $ = layui.jquery;
+        <!-- 渲染表格 -->
+        table.render({
+            elem: '#notification_table',
+            url: '{% url "notification_get" %}',
+            id: 'notificationTable',
+            page: true,
+            skin: 'line',
+            limit: 20,
+            limits: [20, 40, 60, 80, 100],
+            cols: [[
+                {type: 'checkbox', fixed: 'left'},
+                {field: 'level', title: '等级', width:'100', align: "center", templet:'#levelTpl'},
+                {field: 'send_user', title: '发送人', width:'100', align: "center"},
+                {field: 'message', title: '信息内容', width:'650', align: "center"},
+                {field: 'time', title: '距今', width:'80', align: "center"},
+                {field: 'read_status', title: '状态', width:'80', align: "center", templet:'#readStatus'},
+                {fixed: 'right', title: '查看', align: 'center', toolbar: '#actionTable'}
+            ]]
+        });
+        <!-- 筛选表格数据 -->
+        $("#search").click(function () {
+            $("form").submit(function (event) {
+                event.preventDefault();
+            });
+            table.reload('notificationTable', {
+                page: {
+                    curr: 1
+                },
+                where: {
+                    read_status: $('#read_status').val(),
+                    level: $('#level').val(),
+                    send_user: $("#send_user").val(),
+                    message: $('#message').val()
+                }
+            });
+        });
+        <!-- 监听表格按钮事件 -->
+        table.on('tool(notificationTable)',function (obj) {
+            var data = obj.data,
+                layEvent = obj.event,
+                tr = obj.tr;
+            if (layEvent === "detail") {
+                var html_content = '<h3>' + data["send_user"] + '：</h3>' +
+                        '<p>' + data["message"] + '</p><br/><i>' + data["create_time"] + '</i>';
+                layer.open({
+                    title: '查看消息' + "-----" + data["level"],
+                    content: html_content,
+                    skin: 'layui-layer-lan',
+                    yes: function (index, layero) {  //关闭弹出层后判断消息是否为未读，如果是则将该条数据阅读状态设置为已读并刷新表格
+                        if (data["read_status"] === "未读") {
+                            $.ajax({
+                                url: '{% url "change_read_status" %}',
+                                type: 'post',
+                                dataType: 'json',
+                                data: {
+                                    "type": "change_true",
+                                    "id": data["id"],
+                                },
+                            });
+                        }
+                        layer.close(index);
+                        table.reload("notificationTable")
+                    }
+                })
+            }
+        });
+        <!-- 监听删除事件 -->
+        $("#delete").click(function () {
+            $("form").submit(function (event) {
+                event.preventDefault();
+            });
+            var checkStatus = table.checkStatus('notificationTable');
+            var data = checkStatus.data;
+            var id_array = [];
+            $.each(data, function (index, value) {
+                id_array.push(value.id);
+            });
+            if (id_array.length === 0) {
+                layer.msg("没有选中任何记录");
+            }
+            else {
+                layer.confirm(
+                    "确定删除吗？",
+                    {
+                        icon: 2,
+                        title: "彻底删除？"
+                    },
+                    function (index) {
+                        $.ajax({
+                            url: '{% url "notification_delete" %}',
+                            data: {
+                                "id_data": JSON.stringify(id_array)
+                            },
+                            type: 'post',
+                            dataType: 'json',
+                            async: false,
+                        });
+                        layer.close(index);
+                        layer.msg("记录删除成功");
+                        table.reload('notificationTable');
+                    }
+                )
+            }
+        });
+        <!-- 监听状态标记事件 -->
+        $("#mark").click(function () {
+            $("form").submit(function (event) {
+                event.preventDefault();
+            });
+            var checkStatus = table.checkStatus('notificationTable');
+            var data = checkStatus.data;
+            var id_array = [];
+            $.each(data, function (index, value) {
+                id_array.push(value.id);
+            });
+            if (id_array.length === 0) {
+                layer.msg("没有选中任何记录");
+            }
+            else {
+                layer.confirm(
+                    "确定标记为已读状态吗？",
+                    {
+                        icon: 1,
+                    },
+                    function (index) {
+                        $.ajax({
+                            url: '{% url "change_read_status" %}',
+                            data: {
+                                "id_data": JSON.stringify(id_array),
+                                "type": "mark_true",
+                            },
+                            type: 'post',
+                            dataType: 'json',
+                            async: false
+                        });
+                        layer.close(index);
+                        layer.msg("状态标记成功");
+                        table.reload('notificationTable');
+                    }
+                )
+            }
+        });
+        <!-- 动态获取信息等级信息 -->
+        $.ajax({
+            url: "{% url 'level_get' %}",
+            type: "get",
+            dataType: 'json',
+            success: function (d) {
+                $.each(d, function (i, v) {
+                    $('#level').append("<option name='level' value='" + v + "'>" + v + "</option>");
+                });
+                $('#level').trigger('change');
+                form.render();
+            }
+        });
+    });
+</script>
+</body>
+</html>

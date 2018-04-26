@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>运维管理平台</title>
+    <link rel="stylesheet" href="/static/myadmin/layui/css/layui.css">
+</head>
+<body>
+<div id="search_form" style="margin-left: 15px;margin-top: 10px;">
+    <form class="layui-form layui-form-pane" id="search_form">
+        {% csrf_token %}
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <button class="layui-btn layui-btn-sm" id="add_privilege">添加授权</button>
+            </div>
+        </div>
+        <div class="layui-form-item layui-hide">
+            <div class="layui-inline">
+                <input class="layui-btn layui-btn-sm" id="ip" value="{{ d.ip }}">数据标记</input>
+            </div>
+        </div>
+    </form>
+</div>
+
+<table id="privilege_table" lay-filter="privilege_table"></table>
+
+<script src="/static/myadmin/layui/layui.js"></script>
+<!-- 表格操作按钮 -->
+<script type="text/html" id="actionTable">
+    <div class="layui-btn-group">
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon">&#xe640;</i></a>
+    </div>
+</script>
+<script>
+    layui.use(['table', 'form'], function () {
+        var table = layui.table,
+            form = layui.form,
+            $ = layui.jquery;
+        var ip = $("#ip").val();
+        <!-- 渲染授权表格 -->
+        table.render({
+            elem: '#privilege_table',
+            url: '{% url "privilege_get" %}' + "?ip=" + ip,
+            id: 'privilegeTable',
+            page: true,
+            width: 1000,
+            cols: [[
+                {field: 'id', title: 'ID', align: "center", width: 100, sort: true},
+                {field: 'target_user', title: '授权用户', width: 400, align: "center"},
+                {field: 'start_time', title: '开始日期', align: "center"},
+                {field: 'end_time', title: '结束日期', align: "center"},
+                {fixed: 'right', title: '操作', align: 'center', toolbar: '#actionTable'}
+            ]],
+        });
+        <!-- 监听表格按钮 -->
+        table.on('tool(privilege_table)', function (obj) {
+            var data = obj.data,
+                layEvent = obj.event,
+                tr = obj.tr;
+            if (layEvent === 'del') {
+                layer.confirm(
+                    '确定彻底删除ID为' + data["id"] + '这条记录吗？删除之后无法复原哦!',
+                    {
+                        icon: 2,
+                        title: "彻底删除" + data["id"] + "?"
+                    },
+                    function (index) {
+                        $.post('{% url 'privilege_delete' %}' + "?id=" + data.id);
+                        obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                        layer.msg("删除完毕");
+                        layer.close(index);
+                    }
+                );
+            }
+        });
+        <!-- 添加授权 -->
+        $("#add_privilege").click(function () {
+            $("form").submit(function (event) {
+                event.preventDefault();
+            });
+            parent.layer.open({
+                type: 2,
+                title: ['添加授权', 'font-size:20px;'],
+                id: 'add_privilege_form', //防止重复弹出
+                content: '{% url "privilege_add_form" %}' + "?ip=" + ip,
+                area: ["400px", "500px"],
+                maxmin: false,
+                skin: 'layui-layer-lan',
+                end: function () {
+                    table.reload('privilegeTable');
+                },
+            });
+        })
+    })
+</script>
+</body>
+</html>

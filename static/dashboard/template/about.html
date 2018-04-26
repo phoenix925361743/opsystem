@@ -1,0 +1,27 @@
+{% extends 'myadmin/base.html' %}
+
+{% block content %}
+    <div>
+        <h2 style="margin-top: 10px; margin-left: 10px">更新日志</h2>
+        <hr class="layui-bg-green">
+        <ul class="layui-timeline" id="version_info"></ul>
+    </div>
+{% endblock %}
+
+{% block js %}
+<script>
+layui.use(['element', 'jquery'], function () {
+    var element = layui.element,
+        $ = layui.jquery;
+    $.ajax({
+        url: '{% url "version_get" %}',
+        type: "get",
+        dataType: "json",
+        success: function (d) {
+            $("#version_info").html("");
+            $("#version_info").append(d);
+        }
+    })
+})
+</script>
+{% endblock %}

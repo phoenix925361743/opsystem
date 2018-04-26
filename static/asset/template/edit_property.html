@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>运维管理平台</title>
+    <link rel="stylesheet" href="/static/myadmin/layui/css/layui.css">
+</head>
+<body>
+<div class="layui-fluid" style="margin-left: 15px;margin-top: 30px;">
+    <form class="layui-form layui-form-pane" id="add_form">
+        {% csrf_token %}
+        <div style="color: red;font-size: 15px;">请填写完整的键值对数据，否则属性记录将不会被创建!</div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">资产属性</label>
+                <div class="layui-input-inline" style="width: 160px;">
+                    <input id="name" placeholder="请输入资产属性名..." class="layui-input" type="text" value="{{ p.property_name.name }}">
+                </div>
+                <div class="layui-form-mid">：</div>
+                <div class="layui-input-inline" style="width: 160px;">
+                    <input id="value" placeholder="请输入资产属性值..." class="layui-input" type="text" value="{{ p.property_value.value }}">
+                </div>
+            </div>
+        </div>
+    </form>
+    <div style="margin-left: 35%;">
+        <button type="button" class="layui-btn layui-btn-sm" id="add_submit">提交</button>
+        <button type="reset" class="layui-btn layui-btn-sm layui-btn-normal">重置</button>
+    </div>
+</div>
+<script src="/static/myadmin/layui/layui.js"></script>
+<script>
+    layui.use(['element', 'form', 'laydate', 'layer', 'table'], function () {
+        var element = layui.element,
+            $ = layui.jquery,
+            table = layui.table,
+            layer = layui.layer;
+        $('#add_submit').click(function () {
+            var name = $("#name").val(),
+                value = $("#value").val();
+            if (name === "" || value === "") {
+                layer.msg("请将数据内容填写完整!");
+            }
+            else {
+                <!-- 如果成功触发表单提交，则获取父body的索引index，并在父页面关闭当前弹出层 -->
+                $.ajax({
+                    url: "{% url 'edit_property' %}",
+                    type: "post",
+                    dataType: "text",
+                    data: {
+                        "name": name,
+                        "value": value,
+                        "p_id": '{{ p_id }}',
+                    },
+                    success: function (d) {
+                        if (d === "ok") {
+                            var index = parent.layer.getFrameIndex(window.name);
+                            parent.layer.msg("提交成功!");
+                            parent.layer.close(index);
+                        }
+                        else {
+                            parent.layer.msg(d)
+                        }
+                    }
+                })
+            }
+        });
+    })
+</script>
+</body>
+</html>

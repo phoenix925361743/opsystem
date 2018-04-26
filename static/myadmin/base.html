@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>运维管理平台</title>
+    <link rel="stylesheet" href="/static/myadmin/layui/css/layui.css">
+    <link rel="icon" href="/static/myadmin/media/image/favicon.ico" type="image/x-icon"/>
+    {% block css %}{% endblock %}
+</head>
+<body class="layui-layout-body" onload="NotificationGet();">
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header">
+        <div class="layui-logo"><img src="/static/myadmin/media/image/favicon.ico"> 运维管理平台</div>
+        <!-- 头部区域 -->
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item"><a id="notification_number">消息</a></li>
+            {#            <li class="layui-nav-item"><a href="#">任务<span class="layui-badge" id="task_number">99</span></a></li>#}
+            <li class="layui-nav-item">
+                <a>
+                    <img src="{{ request.session.login_user_info.avatar }}" class="layui-nav-img">
+                    {{ request.session.login_user_info.login_user }}
+                </a>
+                <dl class="layui-nav-child">
+                    <dd><a href="{% url 'user_info' %}">基本资料</a></dd>
+{#                    <dd><a href="#">全局设置</a></dd>#}
+{#                    <dd><a id="changePass">修改密码</a></dd>#}
+                    <dd>
+                        <hr class="layui-bg-gray">
+                    </dd>
+                    <dd><a href="{% url 'logout' %}">退出登录</a></dd>
+                </dl>
+            </li>
+        </ul>
+    </div>
+    <div class="layui-side layui-bg-black layui-col-md-3">
+        <div class="layui-side-scroll">
+            <!-- 左侧导航区域 -->
+            <ul class="layui-nav layui-nav-tree">
+                <li class="layui-nav-item"><a href="{% url 'index' %}"><i class="layui-icon">&#xe68e;</i> 仪表板</a></li>
+                {% if "WeeklyReport" in request.session.login_user_info.login_permission %}
+                    <li class="layui-nav-item" id="weekly_report_nav_father">
+                        <a href="javascript:;"><i class="layui-icon">&#xe63c;</i> 周报管理</a>
+                        <dl class="layui-nav-child">
+                            {% if "WeeklyReportWrite" in request.session.login_user_info.login_permission %}
+                                <dd><a href="{% url 'daily_report' %}" class="weekly_report_nav"> 周报填写</a></dd>
+                            {% endif %}
+                            {% if "WeeklyReportSummary" in request.session.login_user_info.login_permission %}
+                                <dd><a href="{% url 'report_summary' %}" class="weekly_report_nav"> 周报汇总</a></dd>
+                            {% endif %}
+                            {% if "WeeklyReportAdvancedSetting" in request.session.login_user_info.login_permission %}
+                                <dd><a href="{% url 'advanced_setting' %}" class="weekly_report_nav"> 高级设置</a></dd>
+                            {% endif %}
+                        </dl>
+                    </li>
+                {% endif %}
+                <li class="layui-nav-item" id="install_nav_father">
+                    <a><i class="layui-icon">&#xe630;</i> 自动灌装</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="{% url 'install' %}">灌装系统</a></dd>
+                        {% if "CobblerAdvanced" in request.session.login_user_info.login_permission %}
+                            <dd><a href="{% url 'cobbler_advanced' %}">高级设置</a></dd>
+                        {% endif %}
+                    </dl>
+                </li>
+                <li class="layui-nav-item" id="asset_nav_father">
+                    <a><i class="layui-icon">&#xe629;</i> 资产管理</a>
+                    <dl class="layui-nav-child">
+                        {% if "AssetManagementIPaddress" in request.session.login_user_info.login_permission %}
+                            <dd><a href="{% url 'ip_address' %}">IP管理</a></dd>
+                        {% endif %}
+                        <dd><a href="{% url 'depart_asset' %}">部门资产</a></dd>
+                    </dl>
+                </li>
+                {% if "SystemSetting" in request.session.login_user_info.login_permission %}
+                    <li class="layui-nav-item">
+                        <a href="#"><i class="layui-icon">&#xe614;</i> 系统设置</a>
+                        <dl class="layui-nav-child">
+                            {% if "SystemSettingUser" in request.session.login_user_info.login_permission %}
+                                <dd><a href="{% url 'user_manage' %}"> 用户管理</a></dd>
+                            {% endif %}
+                            {% if "SystemSettingAbout" in request.session.login_user_info.login_permission %}
+                                <dd><a href="{% url 'system_about' %}"> 关于</a></dd>
+                            {% endif %}
+                        </dl>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 15px;">{% block content %}{% endblock %}</div>
+    </div>
+    <div class="layui-footer">
+        <!-- 底部固定区域 -->
+        测试运维部-冯春阳 &copy; 201712-201812
+    </div>
+</div>
+<script src="/static/myadmin/layui/layui.js"></script>
+<script>
+    <!-- 动态获取消息数据/30秒刷新一次 -->
+    function NotificationGet() {
+        layui.jquery.ajax({
+            url: '{% url "not_read_notification_number_get" %}',
+            type: 'get',
+            dataType: 'json',
+            success: function (d) {
+                if (d.not_read_notification_count !== 0) {
+                    var num_html = '消息<span class="layui-badge">' + d.not_read_notification_count + '</span>';
+                    layui.jquery("#notification_number").html(num_html);
+                }
+            }
+        });
+    }
+    window.setInterval(function () {
+        NotificationGet()
+    }, 30000);
+</script>
+<script>
+    layui.use(['layer', 'element', 'util'], function () {
+        var element = layui.element,
+            layer = layui.layer,
+            util = layui.util,
+            $ = layui.jquery;
+        <!-- 消息点击事件 -->
+        $("#notification_number").click(function () {
+            layer.open({
+                type: 2,
+                title: ['消息提示', 'font-size:20px;'],
+                id: 'notification_form', //防止重复弹出
+                content: '{% url "notification_form" %}',
+                area: ["1200px", "500px"],
+                maxmin: false,
+                skin: 'layui-layer-lan',
+                yes: function () {
+                    var index = layer.getFrameIndex();
+                    layer.iframeAuto(index);
+                },
+            });
+        });
+        <!-- 快速导航功能集 -->
+        util.fixbar({
+            bar1: "&#xe637;",
+            css: {right: 20, bottom: 60},
+            bgcolor: '#393D49',
+            click: function (type) {
+                if (type === 'bar1') {
+                    layer.open({
+                        type: 2,
+                        title: ['备忘录', 'font-size:20px;'],
+                        id: 'memorandum_form', //防止重复弹出
+                        content: '{% url "memorandum_add_form" %}',
+                        area: ["1200px", "500px"],
+                        maxmin: true,
+                        skin: 'layui-layer-lan',
+                        yes: function () {
+                            var index = layer.getFrameIndex();
+                            layer.iframeAuto(index);
+                        },
+                        end: function () {
+                            tableDailyReport.reload('daily_report');
+                        },
+                        cancel: function () {
+                            layer.closeAll();
+                        },
+                    });
+                }
+            }
+        });
+    })
+</script>
+{% block js %}{% endblock %}
+</body>
+</html>

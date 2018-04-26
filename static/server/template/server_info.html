@@ -1,0 +1,406 @@
+{% extends 'myadmin/media/base.html' %}
+
+{% block body-content %}
+    <form method="post" action="">
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table table-striped table-hover">
+                    <caption class="page-header" style="color: #00CC00;font-size: large;">基本信息</caption>
+                    <tbody>
+                    <tr>
+                        <td><strong>设备ID：</strong><strong>{{ qy.server_id }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label>
+                                <strong>设备厂商：</strong>
+                                <select id="choose_manufacture"></select>&nbsp;
+                                <a style="color: #00CC00;text-decoration: none;" data-toggle="modal"
+                                   data-target="#addManufacture">+</a>
+                            </label>
+                            <span style="margin-right: 50px;"></span>
+                            <label>
+                                <strong>设备型号：</strong>
+                                <select id="choose_model_type"></select>&nbsp;
+                                <a style="color: #00CC00;text-decoration: none;" data-toggle="modal"
+                                   data-target="#addModeltype" id="addModel">+</a>
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label>
+                                <strong>设备分类：</strong>
+                                <select id="choose_classify"></select>
+                            </label>
+                            <span style="margin-right: 50px;"></span>
+                            <label>
+                                <strong>设备状态：</strong>
+                                <select id="choose_status">
+                                    <option id="1" name="status" value="1">在用/生产</option>
+                                    <option id="2" name="status" value="2">闲置</option>
+                                    <option id="3" name="status" value="3">损坏/故障</option>
+                                    <option id="4" name="status" value="4">报废</option>
+                                    <option id="5" name="status" value="5">借出</option>
+                                    <option id="6" name="status" value="6">借入</option>
+                                    <option id="7" name="status" value="7">其他</option>
+                                </select>
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>设备序列号(SN)：</strong>
+                            <input type="text" name="serial_number" placeholder="设备的序列号(SN)"
+                                       value="{{ qy.serial_number|default:'无' }}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>管理IP：</strong>
+                            <input type="text" name="ipaddr" placeholder="设备的管理IP地址"
+                                   value="{{ qy.ipaddr|default:'无' }}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>设备负责人：</strong>
+                            <input type="text" name="person" placeholder="设备的责任人" value="{{ qy.person }}"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>记录创建时间：</strong><strong>{{ qy.create_time|date:"Y/m/d H:i:s" }}</strong><br/>
+                            <strong>记录修改时间：</strong><strong>{{ qy.modify_time|date:"Y/m/d H:i:s" }}</strong>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                {% if qy.remoteinfo_set.filter %}
+                        <table class="table table-hover table-striped">
+                        <caption class="page-header" style="color: #a83c3a;font-size: large;">
+                            远程管理&nbsp;&nbsp;
+                            <a style="color: #00CC00;font-size: small;text-decoration: none" id="addRemoteInfo">+</a>
+                        </caption>
+                        <tbody id="remoteInfo">
+                        {% for re in qy.remoteinfo_set.filter %}
+                            <tr>
+                                <td>
+                                    <label>
+                                        <strong>连接方式：</strong>
+                                        <select name="connect_type" id="choose_connect_type">
+											<option name="connect_type">SSH</option>
+											<option name="connect_type">TELNET</option>
+											<option name="connect_type">HTTP</option>
+											<option name="connect_type">HTTPS</option>
+											<option name="connect_type">RDP</option>
+                                        </select>
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label>
+                                        <strong>启用状态：</strong>
+                                        <select class="enable_flag">
+                                            {% if re.enable_flag %}
+                                                <option name="enable_flag" value="True" selected="selected">启用</option>
+                                                <option name="enable_flag" value="False">禁用</option>
+                                            {% else %}
+                                                <option name="enable_flag" value="True">启用</option>
+                                                <option name="enable_flag" value="False" selected="selected">禁用</option>
+                                            {% endif %}
+                                        </select>
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label>
+                                        <strong>用户名：</strong>
+                                        <input type="text" name="remote_username" value="{{ re.remote_username }}"/>
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label>
+                                        <strong>密码：</strong>
+                                        <input type="text" name="remote_password" value="{{ re.remote_password }}"/>
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label>
+                                        <strong>连接端口：</strong>
+                                        <input type="text" name="remote_port" value="{{ re.remote_port }}"/>
+                                    </label>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <table class="table table-hover table-striped">
+                    <caption class="page-header" style="color: #a83c3a;font-size: large;">
+                        远程管理&nbsp;&nbsp;
+                        <a style="color: #00CC00;font-size: small;text-decoration: none;" id="addRemoteInfo">+</a>
+                    </caption>
+                    <tbody id="remoteInfo"></tbody>
+                    </table>
+                {% endif %}
+                <table class="table table-striped table-hover">
+                    <caption class="page-header" style="color: #2d6987;font-size: large;">生命周期</caption>
+                    <tbody>
+                    <tr>
+                        <td>
+                            <label>
+                                <strong>采购时间：</strong>
+                                {% if qy.lifecycle.purchase_time %}
+                                    <input type="date" name="purchase_time"
+                                           value="{{ qy.lifecycle.purchase_time|date:"Y-m-d" }}"/>
+                                {% else %}
+                                    <input type="date" name="purchase_time"/>
+                                {% endif %}
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label>
+                                <strong>入库时间：</strong>
+                                {% if qy.lifecycle.storage_time %}
+                                    <input type="date" name="purchase_time"
+                                           value="{{ qy.lifecycle.storage_time|date:"Y-m-d" }}"/>
+                                {% else %}
+                                    <input type="date" name="purchase_time"/>
+                                {% endif %}
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label>
+                                <strong>报废时间：</strong>
+                                {% if qy.lifecycle.scrap_time %}
+                                    <input type="date" name="purchase_time"
+                                           value="{{ qy.lifecycle.scrap_time|date:"Y-m-d" }}"/>
+                                {% else %}
+                                    <input type="date" name="purchase_time"/>
+                                {% endif %}
+                            </label>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-hover table-striped">
+                    <caption class="page-header" style="color: #b94441;font-size: large;">属性信息</caption>
+                    <tbody>
+                    {% for att in qy.attributemap_set.filter %}
+                        <tr>
+                            <td>
+                                <label>
+                                    <strong>{{ att.attribute_id.attribute_name }}：</strong>
+                                    <input type="text" value="{{ att.attribute_value_id.attribute_value }}"/>
+                                </label>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+    <!-- 添加制造商模态框 -->
+    <div class="modal fade" id="addManufacture" tabindex="-1" role="dialog" aria-labelledby="addManufactureLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" action="{% url 'addManufacture' %}" class="form-horizontal" role="form" style="margin: 20px;">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                        <h4 class="modal-title" id="#addManufactureLabel">添加设备厂商</h4>
+                    </div>
+                    <div class="modal-body">
+                        <label>设备厂商名称:</label>
+                        <input type="text" class="form-control" name="name" placeholder="请输入设备厂商名称..." />
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+                        <button type="submit" class="btn btn-primary">提交</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- 添加设备型号模态框 -->
+    <div class="modal fade" id="addModeltype" tabindex="-1" role="dialog" aria-labelledby="addModeltypeLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" action="{% url 'addModeltype' %}" class="form-horizontal" role="form" style="margin: 20px;">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                        <h4 class="modal-title" id="#addModeltypeLabel">添加设备型号</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div>
+                            <label>关联厂商:</label>
+                            <select id="relate_manufacture" name="relate_manufacture"></select>
+                        </div>
+                        <div>
+                            <label>设备型号:</label>
+                            <input type="text" class="form-control" name="model_type" placeholder="请输入设备型号名称..." />
+                        </div>
+                        <div id="extra_content"></div>
+                        <div id="add_extra">
+                            <a style="text-decoration: none;" id="addAnotherModel">
+                                <span style="color: #00CC00">+</span>&nbsp;
+                                <span>添加设备型号</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+                        <button type="submit" class="btn btn-primary">提交</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+        $(document).ready(function () {
+            <!-- 获取数据库中的设备制造商列表 -->
+            $.ajax({
+                url: '{% url 'manufacture' %}',
+                type: 'get',
+                dataType: 'json',
+                success: function (m) {
+                    $.each(m, function (index, value) {
+                        if (value === '{{ qy.manufacture.name }}') {
+                            $("#choose_manufacture").append("<option name='manufacture' value='" + value + "' selected='selected'>" + value + "</option>");
+                        }
+                        else {
+                            $("#choose_manufacture").append("<option name='manufacture' value='" + value + "'>" + value + "</option>");
+                        }
+                    });
+                    $("#choose_manufacture").trigger('change');
+                }
+            });
+            <!-- 获取制造商信息获取型号列表 -->
+            $.ajax({
+                url: '{% url 'model_type' %}',
+                type: 'get',
+                data: {
+                    'manufacture': '{{ qy.manufacture.name }}'
+                },
+                dataType: 'json',
+                success: function (t) {
+                    $.each(t, function (index, value) {
+                        if (value === '{{ qy.model_type.model_type }}') {
+                            $('#choose_model_type').append("<option name='model_type' value='" + value + "' selected='selected'>" + value + "</option>")
+                        }
+                        else {
+                            $('#choose_model_type').append("<option name='model_type' value='" + value + "'>" + value + "</option>");
+                        }
+                    });
+                    $("#choose_model_type").trigger('change');
+                }
+            });
+            <!-- 切换制造商的同时刷新该制造商的产品型号 -->
+            $('#choose_manufacture').click(function () {
+                if ($(this).attr('selected') === 'selected') {
+
+                }
+                else {
+                    $.ajax({
+                        url: '{% url 'model_type' %}',
+                        type: 'get',
+                        data: {
+                            'manufacture': $(this).val()
+                        },
+                        dataType: 'json',
+                        success: function (t) {
+                            $('#choose_model_type').empty();
+                            $('#choose_model_type').append("<option name='model_type'>--选择型号--</option>");
+                            $.each(t, function (index, value) {
+                                if (value === '{{ qy.model_type.model_type }}') {
+                                    $('#choose_model_type').append("<option name='model_type' value='" + value + "' selected='selected'>" + value + "</option>")
+                                }
+                                else {
+                                    $('#choose_model_type').append("<option name='model_type' value='" + value + "'>" + value + "</option>");
+                                }
+                            });
+                        }
+                    })
+                }
+            });
+            <!-- 获取设备分类 -->
+            $.ajax({
+                url: '{% url 'classify' %}',
+                type: 'get',
+                dataType: 'json',
+                success: function (c) {
+                    $.each(c, function (index, value) {
+                        if (value === '{{ qy.classify_id.classify_name }}') {
+                            $('#choose_classify').append("<option name='model_type' value='" + value + "' selected='selected'>" + value + "</option>")
+                        }
+                        else {
+                            $('#choose_classify').append("<option name='model_type' value='" + value + "'>" + value + "</option>");
+                        }
+                    });
+                    $("#choose_model_type").trigger('change');
+                }
+            });
+            var status_html = $('#choose_status').children();
+            $.each(status_html, function (index, value) {
+                if (value.id === '{{ qy.status }}') {
+                    $("#" + value.id).attr('selected', 'selected');
+                }
+            });
+            <!-- 定义随机数生成范围 -->
+            var maximum = 99999;
+            var minimum = 0;
+            var generateRandomNumber = parseInt(Math.random() * (maximum - minimum + 1) + minimum);
+            <!-- 添加动态型号添加框 -->
+            $("#addModel").click(function () {
+                $.ajax({
+                    url: '{% url 'manufacture' %}',
+                    type: 'get',
+                    dataType: 'json',
+                    success: function (m) {
+                        $("#relate_manufacture").empty();
+                        $("#extra_content").empty();
+                        $.each(m, function (index, value) {
+                            $("#relate_manufacture").append("<option name='manufacture' value='" + value + "'>" + value + "</option>");
+                        });
+                        $("#relate_manufacture").trigger('change');
+                    }
+                });
+            });
+            $("#addAnotherModel").click(function () {
+                $("#extra_content").append("<label>设备型号:</label><input type='text' class='form-control' name='model_type' placeholder='请输入设备型号名称...' />");
+            });
+            $("#addRemoteInfo").click(function () {
+                var table_html = '<tr><td><label><strong>连接方式：</strong><select name="connect_type">' +
+                    '<option>--选择连接方式--</option><option name="connect_type" value="SSH"></option>' +
+                    '<option name="connect_type" value="TELNET"></option><option name="connect_type" value="HTTP">' +
+                    '</option><option name="connect_type" value="HTTPS"></option><option name="connect_type" value="RDP">' +
+                    '</option></select></label></td></tr><tr><td><label><strong>启用状态：</strong><select class="enable_flag">' +
+                    '<option>--选择启用状态--</option><option name="enable_flag" value="True">启用</option>' +
+                    '<option name="enable_flag" value="False">禁用</option></select></label></td></tr><tr><td>' +
+                    '<label><strong>用户名：</strong><input type="text" name="remote_username" placeholder="请输入连接用户名..." />' +
+                    '</label></td></tr><tr><td><label><strong>密码：</strong><input type="text" name="remote_password" placeholder="请输入连接密码..." />' +
+                    '</label></td></tr><tr><td><label><strong>连接端口：</strong><input type="text" name="remote_port" placeholder="请输入连接端口..." />' +
+                    '</label></td></tr>';
+                $("#remoteInfo").append(table_html);
+            });
+        })
+    </script>
+{% endblock %}

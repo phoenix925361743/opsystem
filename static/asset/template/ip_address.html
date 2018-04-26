@@ -1,0 +1,247 @@
+{% extends 'myadmin/base.html' %}
+
+{% block content %}
+    <div class="content-header">
+        <h2 class="layui-card-header" style="font-size: large;">IP地址管理</h2>
+    </div>
+    <div class="content-breadcrumb layui-bg-gray">
+        <span class="layui-breadcrumb" lay-separator=">">
+          <a href="{% url 'index' %}"><i class="layui-icon">&#xe68e;</i> 仪表板</a>
+          <a><cite>资产管理</cite></a>
+            <a><cite>IP地址管理</cite></a>
+        </span>
+    </div>
+    <div class="tips">
+        <div class="layui-collapse layui-field-box" lay-accordion="">
+            <div class="layui-colla-item">
+                <h2 class="layui-colla-title">使用说明-2018/04/17</h2>
+                <div class="layui-colla-content">
+                    <ul>
+                        <li>1、展示IP地址的相关信息；</li>
+                        <li>2、支持IP地址的使用申请。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <br/>
+        <fieldset class="layui-elem-field">
+            <legend>IP地址</legend>
+            <br/>
+            <form class="layui-form layui-form-pane" id="search_form" style="margin-top: 10px;">
+                <div class="reportTable layui-form-item" style="margin-left: 10px;">
+                    <div class="layui-inline">
+                        <input name="ip_address" id="ip_address" autocomplete="off"
+                               placeholder="输入IP地址..." class="layui-input" type="text">
+                    </div>
+                    <div class="layui-inline">
+                        <select name="person" id="person" lay-verify="person" lay-search="">
+                            <option value="">--选择或搜索使用者--</option>
+                        </select>
+                    </div>
+                    <div class="layui-inline">
+                        <select name="status" id="status" lay-verify="status" lay-search="">
+                            <option value="">--选择或搜索状态--</option>
+                        </select>
+                    </div>
+                    <div class="layui-inline">
+                        <select name="area" id="area" lay-verify="area" lay-search="">
+                            <option value="">--选择或搜索区域--</option>
+                        </select>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn" id="search">搜索</button>
+                        <button class="layui-btn" id="reset" type="reset">重置</button>
+                    </div>
+                </div>
+            </form>
+            <div class="layui-field-box">
+                {% if "超级管理员" in role %}
+                    <div class="layui-field-box">
+                        <div class="layui-btn-group">
+                            <div style="margin-bottom: 0;">
+                                <button id="add_ip" data-method="add_ip" class="layui-btn layui-btn-sm">添加</button>
+                                <button id="add_ip_batch" data-method="add_ip_batch" class="layui-btn layui-btn-sm layui-btn-normal">批量</button>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                <table id="ip_table" lay-filter="ipTable"></table>
+            </div>
+        </fieldset>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <!-- 表格操作按钮 -->
+    <script type="text/html" id="actionTable">
+        <div class="layui-btn-group">
+            <a class="layui-btn layui-btn-xs" lay-event="edit"><i class="layui-icon">&#xe642;</i></a>
+            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon">&#xe640;</i></a>
+        </div>
+    </script>
+    <!-- 渲染表格样式，禁用未通过审核和不在授权列表里的机器实例的操作按钮 -->
+    <script type="text/html" id="ipStatus">
+        {% verbatim %}
+            {{#  if(d.status === '空闲'){ }}
+            <span style="color:#32CD32;">{{ d.status }}</span>
+            {{#  } else if(d.status === '占用') { }}
+            <span style="color:#1E90FF;">{{ d.status }}</span>
+            {{#  } else if(d.status === '临时') { }}
+            <span style="color:#DC143C;">{{ d.status }}</span>
+            {{#  } else { }}
+            <span style="color:#585858;">{{ d.status }}</span>
+            {{#  } }}
+        {% endverbatim %}
+    </script>
+    <script>
+        layui.use(["table", "form", "layer", "element"], function () {
+            var table = layui.table,
+                $ = layui.jquery,
+                layer = layui.layer,
+                element = layui.element,
+                form = layui.form;
+            <!-- 手动展开导航栏 -->
+            $("#asset_nav_father").addClass("layui-nav-itemed");
+            <!-- 获取用户名 -->
+            $.ajax({
+                url: "{% url 'username_get' %}",
+                type: "get",
+                dataType: 'json',
+                success: function (d) {
+                    $.each(d, function (i, v) {
+                        $('#person').append("<option name='person' value='" + v + "'>" + v + "</option>");
+                    });
+                    $('#person').trigger('change');
+                    form.render();
+                }
+            });
+            <!-- 获取分配区域 -->
+            $.ajax({
+                url: "{% url 'area_get' %}",
+                type: "get",
+                dataType: 'json',
+                success: function (d) {
+                    $.each(d, function (i, v) {
+                        $('#area').append("<option name='area' value='" + v + "'>" + v + "</option>");
+                    });
+                    $('#area').trigger('change');
+                    form.render();
+                }
+            });
+            <!-- 获取ip使用状态-->
+            $.ajax({
+                url: "{% url 'ip_status_get' %}",
+                type: "get",
+                dataType: 'json',
+                success: function (d) {
+                    $.each(d, function (i, v) {
+                        $('#status').append("<option name='status' value='" + v + "'>" + v + "</option>");
+                    });
+                    $('#status').trigger('change');
+                    form.render();
+                }
+            });
+            <!-- 渲染IP地址表格 -->
+            table.render({
+                elem: '#ip_table',
+                url: '{% url 'ip_address_get' %}',
+                page: true,
+                limit: 20,
+                limits: [20, 40, 60, 80, 100],
+                id: 'ipTable',
+                cols: [[
+                    {field: 'ip_address', title: 'IP地址', sort: true, align: "center"},
+                    {field: 'prefix', title: '子网位数', align: "center"},
+                    {field: 'gateway', title: '网关', align: "center"},
+                    {field: 'person', title: '使用者', align: "center"},
+                    {field: 'usage', title: '用途', align: "center"},
+                    {field: 'allocate_time', title: '分配时间', align: "center"},
+                    {field: 'end_time', title: '到期时间', align: "center"},
+                    {field: 'status', title: '状态', align: "center", templet: "#ipStatus"},
+                    {field: 'area', title: '分配区域', align: "center"},
+                    {fixed: 'right', title: '操作', width: 110, align: 'center', toolbar: '#actionTable'}
+                ]]
+            });
+            <!-- 搜索重载ip地址表格 -->
+            $("#search").click(function () {
+                $("form").submit(function (e) {
+                    e.preventDefault();
+                });
+                table.reload('ipTable', {
+                    page: {curr: 1},
+                    where: {
+                        ip_address: $("#ip_address").val(),
+                        person: $("#person").val(),
+                        status: $("#status").val(),
+                        area: $("#area").val(),
+                    }
+                })
+            });
+            <!-- 添加IP地址 -->
+            $("#add_ip").click(function () {
+                layer.open({
+                    type: 2,
+                    title: ['添加IP地址', 'font-size:20px;'],
+                    id: 'ip_add_form', //防止重复弹出
+                    content: '{% url "ip_add_form" %}',
+                    area: ["500px", "500px"],
+                    maxmin: false,
+                    skin: 'layui-layer-lan',
+                    end: function () {
+                        table.reload('ipTable');
+                    },
+                });
+            });
+            <!-- 监听ip地址表格按钮 -->
+            table.on('tool(ipTable)', function (obj) {
+                var data = obj.data,
+                    layEvent = obj.event,
+                    tr = obj.tr;
+                if (layEvent === 'edit') {
+                    layer.open({
+                        type: 2,
+                        title: ['编辑IP信息', 'font-size:20px;'],
+                        id: 'add_ip_form', //防止重复弹出
+                        content: '{% url "ip_add_form" %}' + "?ip=" + data.ip_address,
+                        area: ["600px", "500px"],
+                        maxmin: false,
+                        skin: 'layui-layer-lan',
+                        end: function () {
+                            table.reload('ipTable');
+                        },
+                    });
+                }
+                else if (layEvent === 'del') {
+                    layer.confirm(
+                        '确定彻底删除' + data["ip_address"] + '这条记录吗？删除之后无法复原哦!',
+                        {
+                            icon: 2,
+                            title: "彻底删除" + data["ip_address"] + "?"
+                        },
+                        function (index) {
+                            $.post('{% url 'ip_delete' %}' + "?ip=" + data.ip_address);
+                            obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                            layer.msg("删除完毕");
+                            layer.close(index);
+                        }
+                    );
+                }
+            });
+            <!-- 批量添加IP地址接口 -->
+            $("#add_ip_batch").click(function () {
+                layer.open({
+                    type: 2,
+                    title: ['添加IP地址段', 'font-size:20px;'],
+                    id: 'ip_add_batch_form', //防止重复弹出
+                    content: '{% url "ip_add_batch_form" %}',
+                    area: ["500px", "350px"],
+                    maxmin: false,
+                    skin: 'layui-layer-lan',
+                    end: function () {
+                        table.reload('ipTable');
+                    },
+                });
+            })
+        })
+    </script>
+{% endblock %}

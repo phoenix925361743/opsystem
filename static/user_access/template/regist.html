@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>注册管理</title>
+    <!-- CSS -->
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto:400,100,300,500">
+    <link rel="stylesheet" href="/static/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/user_access/template/assets/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/static/user_access/template/assets/css/form-elements.css">
+    <link rel="stylesheet" href="/static/user_access/template/assets/css/style.css">
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    <!-- Favicon and touch icons -->
+    <link rel="shortcut icon" href="/static/user_access/template/assets/ico/favicon.png">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144"
+          href="/static/user_access/template/assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114"
+          href="/static/user_access/template/assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72"
+          href="/static/user_access/template/assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed"
+          href="/static/user_access/template/assets/ico/apple-touch-icon-57-precomposed.png">
+</head>
+<body>
+<!-- Top content -->
+<div class="top-content">
+    <div class="inner-bg">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-8 col-sm-offset-2 text">
+                    <h1>运维管理平台注册</h1>
+                    <div class="description">
+                        <p style="color: #C6E746;">
+                            使用本平台之前，请先进行注册。如有疑问，请邮件联系本人：fengchunyang@antiy.cn
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6 col-sm-offset-3 form-box">
+{#                    <div class="form-top">#}
+{#                        <div class="form-top-left">#}
+{#                            <h3>运维管理平台</h3>#}
+{#                            <p>请输入用户名、密码、邮箱进行注册。</p>#}
+{#                        </div>#}
+{#                        <div class="form-top-right">#}
+{#                            <i class="fa fa-key"></i>#}
+{#                        </div>#}
+{#                    </div>#}
+                    <div class="form-bottom">
+                        <div class="form-group">
+                            <input type="text" name="username" placeholder="请输入用户名..."
+                                   class="form-username form-control" id="form-username">
+                        </div>
+                        <div class="form-group">
+                            <input type="password" name="password" placeholder="请输入用户密码..."
+                                   class="form-password form-control" id="form-password">
+                        </div>
+                        <div class="form-group">
+                            <input type="password" name="password2" placeholder="请再次输入用户密码..."
+                                   class="form-password2 form-control" id="form-password2">
+                        </div>
+                        <div class="form-group">
+                            <input type="email" name="email" placeholder="请输入邮箱..."
+                                   class="form-email form-control" id="form-email">
+                        </div>
+                        <div class="form-group">
+                            <select id="depart" class="form-control">
+                                <option>--选择所属部门--</option>
+                            </select>
+                        </div>
+                        <div>
+                            <span id="message"></span>
+                        </div>
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-md-3 col-md-offset-2">
+                                    <button type="submit" class="btn" id="submit" style="background-color: #1b809e">注册
+                                    </button>
+                                </div>
+                                <div class="col-md-3 col-md-offset-2">
+                                    <a href="{% url 'login' %}">
+                                        <button type="button" class="btn">返回登录</button>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Javascript -->
+<script src="/static/user_access/template/assets/js/jquery-1.11.1.min.js"></script>
+<script src="/static/user_access/template/assets/bootstrap/js/bootstrap.min.js"></script>
+<script src="/static/user_access/template/assets/js/jquery.backstretch.min.js"></script>
+<script src="/static/user_access/template/assets/js/scripts2.js"></script>
+<!--[if lt IE 10]>
+    <script src="/static/user_access/template/assets/js/placeholder.js"></script>
+<![endif]-->
+<script>
+    $(document).ready(function () {
+        $("#submit").click(function () {
+            var uname = $("#form-username").val();
+            var pass1 = $("#form-password").val();
+            var pass2 = $("#form-password2").val();
+            var e_mail = $("#form-email").val();
+            var depart = $("#depart").val();
+            if (pass1 === "" || pass2 === "" || e_mail === "" || depart === "--选择所属部门--") {
+                $("#message").html("<font color='red'>输入不能为空！</font>");
+                $("form").submit(function (event) {
+                    event.preventDefault();
+                })
+            }
+            else {
+                if (pass1 === pass2) {
+                    if (pass1.length < 6 || pass1.length > 15) {
+                        $("#message").html("<font color='red'>密码长度在6~15个字符！</font>");
+                        $("form").submit(function (event) {
+                            event.preventDefault();
+                        })
+                    }
+                    else {
+                        $.ajax({
+                            url: "{% url 'regist' %}",
+                            data: {
+                                'username': uname,
+                                'password': pass1,
+                                'email': e_mail,
+                                'depart': depart
+                            },
+                            type: "post",
+                            dataType: "json",
+                            success: function (ret) {
+                                if (ret.code === "0") {
+                                    $("#message").html("<font color='red'>账号或者邮箱已被注册，请重试！</font>")
+                                }
+                                else {
+                                    $("#message").html("<font color='blue'>注册成功，请登录！</font>");
+                                    setTimeout("$(location).prop('href', '{% url 'login' %}')", 1000)
+                                }
+                            }
+                        })
+                    }
+                }
+                else {
+                    $("#message").html("<font color='red'>密码不一致,请重新输入！</font>");
+                    $("form").submit(function (event) {
+                        event.preventDefault();
+                    })
+                }
+                var reg = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/;
+                if (!reg.test(e_mail)) {
+                    $("#message").html("<font color='red'>邮箱格式不正确,请重新输入！</font>");
+                    $("form").submit(function (event) {
+                        event.preventDefault();
+                    })
+                }
+            }
+        });
+        <!-- 动态获取工作编号信息 -->
+        $.ajax({
+            url: "{% url 'depart_get' %}",
+            type: "get",
+            dataType: 'json',
+            success: function (d) {
+                $.each(d, function (i, v) {
+                    $('#depart').append("<option name='depart' value='" + v + "'>" + v + "</option>");
+                });
+                $('#depart').trigger('change');
+            }
+        });
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+{% extends "myadmin/base.html" %}
+
+{% block content %}
+    <div class="content-header">
+        <h2 class="layui-card-header" style="font-size: large;">用户管理</h2>
+    </div>
+    <div class="content-breadcrumb layui-bg-gray">
+        <span class="layui-breadcrumb" lay-separator=">">
+          <a href="{% url 'index' %}"><i class="layui-icon">&#xe68e;</i> 仪表板</a>
+          <a><cite>系统设置</cite></a>
+            <a><cite>用户管理</cite></a>
+        </span>
+    </div><br/>
+    <div class="layui-tab" lay-filter="user_manage">
+        <ul class="layui-tab-title">
+            <li class="layui-this" id="userManage" lay-id="userManage">用户管理</li>
+            <li id="privilegeManage" lay-id="privilegeManage">授权管理</li>
+        </ul>
+        <br/>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                <div class="tips">
+                    <div class="layui-collapse layui-field-box" lay-accordion="">
+                        <div class="layui-colla-item">
+                            <h2 class="layui-colla-title">使用说明-2018/03/29</h2>
+                            <div class="layui-colla-content">
+                                <ul>
+                                    <li>1、展示所有用户信息；</li>
+                                    <li>2、提供用户信息的查看与增删。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                    <fieldset class="layui-elem-field">
+                        <legend>用户列表</legend>
+                        <br/>
+                        <form class="layui-form layui-form-pane" id="search_form" style="margin-top: 10px;">
+                            <div class="reportTable layui-form-item" style="margin-left: 10px;">
+                                <div class="layui-inline">
+                                    <input name="username" id="username" autocomplete="off"
+                                           placeholder="输入用户名..." class="layui-input" type="text">
+                                </div>
+                                <div class="layui-inline">
+                                    <button class="layui-btn" id="search_user">搜索</button>
+                                    <button class="layui-btn" id="reset" type="reset">重置</button>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="layui-field-box">
+                            <div class="layui-field-box">
+                                <div class="layui-btn-group">
+                                    <div style="margin-bottom: 0;">
+                                        <button id="addUser" data-method="addUser" data-type="auto"
+                                                class="layui-btn layui-btn-sm">添加
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <table class="layui-hide" id="user_table" lay-filter="userTable"></table>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+            <div class="layui-tab-item">
+                敬请期待！
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <!-- 表格操作按钮 -->
+    <script type="text/html" id="actionTable">
+        <div class="layui-btn-group">
+            <a class="layui-btn layui-btn-xs" lay-event="edit"><i class="layui-icon">&#xe642;</i></a>
+            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon">&#xe640;</i></a>
+        </div>
+    </script>
+    <script type="text/html" id="useTpl">
+        <!-- 渲染表格样式，设置账号启用禁用按钮 -->
+        {% verbatim %}
+        <input type="checkbox" name="use" lay-skin="switch" lay-text="启用|禁用" value="{{ d.username }}"
+                lay-filter="useStatus"  {{ d.use == true ? 'checked' : '' }}>
+        {% endverbatim %}
+    </script>
+    <script>
+        layui.use(["table", "form", "layer", "element"], function () {
+            var table = layui.table,
+                $ = layui.jquery,
+                layer = layui.layer,
+                element = layui.element,
+                form = layui.form;
+            <!-- 渲染用户列表数据表格 -->
+            table.render({
+                elem: '#user_table',
+                url: '{% url 'user_get' %}',
+                page: true,
+                limit: 20,
+                limits: [20, 40, 60, 80, 100],
+                id: 'user_table',
+                cols: [[
+                    {field: 'username', title: '用户名', sort: true, align: "center"},
+                    {field: 'email', title: '邮箱地址', align: "center"},
+                    {field: 'depart', title: '所属部门', align: "center"},
+                    {field: 'role', title: '角色', align: "center"},
+                    {field: 'user_group', title: '组', sort: true, align: "center"},
+                    {field: 'phone', title: '联系电话', align: "center"},
+                    {field: 'create_time', title: '创建时间', align: "center"},
+                    {field: 'use', title: '激活状态', align: "center", templet: "#useTpl"},
+                    {field: 'action', fixed: 'right', title: '操作', width: "110", align: 'center', toolbar: '#actionTable'}
+                ]]
+            });
+            <!-- 搜索重载表格 -->
+            $("#search_user").click(function () {
+                $("form").submit(function (e) {
+                    e.preventDefault();
+                });
+                table.reload('user_table', {
+                    page: {curr: 1},
+                    where: {
+                        username: $("#username").val(),
+                    }
+                })
+            });
+            <!-- 添加用户信息 -->
+            $("#addUser").click(function () {
+                layer.open({
+                    type: 2,
+                    title: ['添加用户', 'font-size:20px;'],
+                    id: 'add_user_form', //防止重复弹出
+                    content: '{% url "user_add_form" %}',
+                    area: ["1000px", "500px"],
+                    maxmin: false,
+                    skin: 'layui-layer-lan',
+                    yes: function () {
+                        var index = layer.getFrameIndex();
+                        layer.iframeAuto(index);
+                    },
+                    end: function () {
+                        table.reload('user_table');
+                    },
+                    cancel: function () {
+                        layer.closeAll();
+                    }
+                });
+            });
+            <!-- 监听灌装状态切换 -->
+            form.on('switch(useStatus)', function (obj) {
+                $.ajax({
+                    url: "{% url 'use_switch' %}",
+                    type: "post",
+                    dataType: "json",
+                    data: {
+                        "status": obj.elem.checked,
+                        "username": this.value,  //锁定数据用
+                    },
+                })
+            });
+            <!-- 监听表格按钮 -->
+            table.on('tool(userTable)', function (obj) {
+                var data = obj.data,
+                    layEvent = obj.event,
+                    tr = obj.tr;
+                if (layEvent === 'edit') {
+                    layer.open({
+                        type: 2,
+                        title: ['编辑用户信息', 'font-size:20px;'],
+                        id: 'add_user_form', //防止重复弹出
+                        content: '{% url "user_add_form" %}' + "?username=" + data.username,
+                        area: ["1000px", "500px"],
+                        maxmin: false,
+                        skin: 'layui-layer-lan',
+                        end: function () {
+                            table.reload('user_table');
+                        },
+                    });
+                }
+                else if (layEvent === 'del') {
+                    layer.confirm(
+                        '确定彻底删除' + data["username"] + '这个用户吗？删除之后无法复原哦!',
+                        {
+                            icon: 2,
+                            title: "彻底删除" + data["username"] + "?"
+                        },
+                        function (index) {
+                            $.post('{% url 'user_delete' %}' + "?username=" + data.username);
+                            obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                            layer.msg("删除完毕");
+                            layer.close(index);
+                        }
+                    );
+                }
+            })
+        })
+    </script>
+{% endblock %}

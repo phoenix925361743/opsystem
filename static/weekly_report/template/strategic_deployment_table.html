@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>运维管理平台</title>
+    <link rel="stylesheet" href="/static/myadmin/layui/css/layui.css">
+</head>
+<body>
+<div id="add_form" style="margin-left: 15px;">
+    <form class="layui-form layui-form-pane" action="{% url 'strategic_deployment_add' %}" method="post">
+        {% csrf_token %}
+        <div class="info"><strong style="color: red;">红色星号为必填项 *</strong></div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>时间周期</label>
+                <div class="layui-input-inline">
+                    <select name="date_period" id="date_period" lay-filter="date_period" lay-search="">
+                        <option value="">--选择或搜索时间周期--</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>工作名称</label>
+                <div class="layui-input-block">
+                    <textarea class="layui-textarea" cols="50" rows="8" name="job_name" id="job_name"
+                                  placeholder="工作名称..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>工作目标</label>
+                <div class="layui-input-block">
+                    <textarea class="layui-textarea" cols="50" rows="8" name="job_goal" id="job_goal"
+                                  placeholder="工作目标..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>工作内容</label>
+                <div class="layui-input-block">
+                    <textarea class="layui-textarea" cols="50" rows="8" name="job_content" id="job_content"
+                              placeholder="工作内容..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>工作总结</label>
+                <div class="layui-input-block">
+                    <textarea class="layui-textarea" cols="50" rows="8" name="summarize" id="summarize"
+                              placeholder="工作总结..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">下周计划</label>
+                <div class="layui-input-block">
+                    <textarea class="layui-textarea" cols="50" rows="8" name="next_week_plan" id="next_week_plan"
+                              placeholder="选填，下周计划内容..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">总体阶段性计划</label>
+                <div class="layui-input-block">
+                    <textarea class="layui-textarea" cols="50" rows="8" name="stage_plan" id="stage_plan"
+                              placeholder="选填，总体阶段性计划..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">特殊说明</label>
+                <div class="layui-input-block">
+                    <textarea class="layui-textarea" cols="50" rows="8" name="remark" id="remark"
+                              placeholder="选填，特殊说明..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item" style="margin-left: 35%;">
+            <button type="submit" class="layui-btn layui-btn-sm" id="add_submit" lay-filter="add">添加</button>
+            <button type="reset" class="layui-btn layui-btn-sm">重置</button>
+        </div>
+    </form>
+</div>
+<script src="/static/myadmin/layui/layui.js"></script>
+<script>
+    layui.use(['table', 'form'], function () {
+        var table = layui.table,
+            form = layui.form,
+            $ = layui.jquery;
+        <!-- 动态获取时间周期信息 -->
+        $.ajax({
+            url: "{% url 'date_period_get' %}",
+            type: "get",
+            dataType: 'json',
+            success: function (d) {
+                $.each(d, function (i, v) {
+                    if ('{{ d.date_period.start_date|date:"Ymd" }}' + "--" + '{{ d.date_period.end_date|date:"Ymd" }}' === v) {
+                        $('#date_period').append("<option name='date_period' selected='selected' value='" + v + "'>" + v + "</option>");
+                    }
+                    else {
+                        $('#date_period').append("<option name='date_period' value='" + v + "'>" + v + "</option>");
+                    }
+                });
+                $('#date_period').trigger('change');
+                form.render();
+            }
+        });
+        <!-- 表单提交验证 -->
+        $("#add_submit").click(function () {
+            var date_period = $("#date_period").val(),
+                job_name = $("#job_name").val(),
+                job_goal = $("#job_goal").val(),
+                job_content = $("#job_content").val(),
+                summarize = $("#summarize").val(),
+                next_week_plan = $("#next_week_plan").val(),
+                stage_plan = $("#stage_plan").val(),
+                remark = $("#remark").val();
+            if (job_goal === "" || job_content === "" || summarize === "" || date_period === "") {
+                layer.msg("请填写必填项内容");
+                return false;
+            }
+            else {
+                <!-- 如果成功触发表单提交，则获取父body的索引index，并在父页面关闭当前弹出层 -->
+                var index = parent.layer.getFrameIndex(window.name);
+                parent.layer.msg("提交成功");
+                parent.layer.close(index);
+            }
+        })
+    })
+</script>
+</body>
+</html>

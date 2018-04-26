@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>运维管理平台</title>
+    <link rel="stylesheet" href="/static/myadmin/layui/css/layui.css">
+</head>
+<body>
+<div class="layui-fluid" id="add_form" style="margin-left: 15px;">
+    <form class="layui-form layui-form-pane" action="{% url 'daily_report_add' %}" method="post" id="add_form_content">
+        {% csrf_token %}
+        <div class="info"><strong style="color: red;">红色星号为必填项 *</strong></div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>日报周期</label>
+                <div class="layui-input-inline" id="date_period_click">
+                    <select name="date_period" id="date_period" lay-filter="date_period" lay-search="">
+                        <option value="">--选择或搜索日报周期--</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>日期</label>
+                <div class="layui-input-block">
+                    {% if d %}
+                        <input name="job_date" id="job_date" autocomplete="off"
+                               class="layui-input" type="text" placeholder="选择日期..."
+                               value="{{ d.job_date|date:'Y-m-d' }}">
+                    {% else %}
+                        <input name="job_date" id="job_date" autocomplete="off"
+                               class="layui-input" type="text" placeholder="选择日期...">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>工作类别</label>
+                <div class="layui-input-inline" id="job_type_click">
+                    <select name="job_type" id="job_type" lay-filter="job_type" lay-search="">
+                        <option value="">--选择或搜索工作类别--</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>工作编号</label>
+                <div class="layui-input-inline" id="job_code_click">
+                    <select name="job_code" id="job_code" lay-verify="job_code" lay-search="">
+                        <option value="">--选择或搜索工作编号--</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>工作内容</label>
+                <div class="layui-input-block">
+                    {% if d %}
+                        <textarea class="layui-textarea" cols="50" rows="4" name="job_content" id="job_content"
+                                  placeholder="工作内容描述...">{{ d.job_content }}</textarea>
+                    {% else %}
+                        <textarea class="layui-textarea" cols="50" rows="4" name="job_content" id="job_content"
+                                  placeholder="工作内容描述..."></textarea>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>工时</label>
+                <div class="layui-input-block">
+                    {% if d %}
+                        <input name="job_time" id="job_time" class="layui-input" value="{{ d.job_time }}"
+                           type="number" step="0.001" placeholder="输入工时(人/日)...">
+                    {% else %}
+                        <input name="job_time" id="job_time" class="layui-input"
+                           type="number" step="0.001" placeholder="输入工时(人/日)...">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>进展状态</label>
+                <div class="layui-input-inline" id="job_status_click">
+                    <select name="job_status" id="job_status" lay-search="">
+                        <option value="">--选择或搜索进展状态--</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">工作阻碍</label>
+                <div class="layui-input-block">
+                    {% if d %}
+                        <textarea class="layui-textarea" cols="50" rows="4" name="job_block" id="job_block"
+                                  placeholder="工作阻碍描述...">{{ d.job_block|default_if_none:"" }}</textarea>
+                    {% else %}
+                        <textarea class="layui-textarea" cols="50" rows="4" name="job_block" id="job_block"
+                                  placeholder="工作阻碍描述..."></textarea>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">明日计划</label>
+                <div class="layui-input-block">
+                    {% if d %}
+                        <textarea class="layui-textarea" cols="50" rows="4" name="job_plan" id="job_plan"
+                                  placeholder="明日计划描述...">{{ d.job_plan|default_if_none:"" }}</textarea>
+                    {% else %}
+                        <textarea class="layui-textarea" cols="50" rows="4" name="job_plan" id="job_plan"
+                                  placeholder="明日计划描述..."></textarea>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">备注说明</label>
+                <div class="layui-input-block">
+                    {% if d %}
+                        <textarea class="layui-textarea" cols="50" rows="4" name="remark" id="remark"
+                                  placeholder="选填，工作内容的额外描述...">{{ d.remark }}</textarea>
+                    {% else %}
+                        <textarea class="layui-textarea" cols="50" rows="4" name="remark" id="remark"
+                                  placeholder="选填，工作内容的额外描述..."></textarea>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item layui-hide">
+            <div class="layui-inline">
+                <label class="layui-form-label">操作方式</label>
+                <div class="layui-input-block">
+                    {% if r_id %}
+                        <input name="method_type" id="method_type" class="layui-input" value="update" type="text">
+                        <input name="r_id" id="r_id" class="layui-input" value="{{ r_id }}" type="text">
+                    {% else %}
+                        <input name="method_type" id="method_type" class="layui-input" value="add" type="text">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item" style="margin-left: 35%;">
+            {% if r_id %}
+                <button type="submit" class="layui-btn layui-btn-sm" id="add_submit">更新</button>
+            {% else %}
+                <button type="submit" class="layui-btn layui-btn-sm" id="add_submit">提交</button>
+            {% endif %}
+            <button type="reset" class="layui-btn layui-btn-sm">重置</button>
+        </div>
+    </form>
+</div>
+<script src="/static/myadmin/layui/layui.js"></script>
+<script>
+    layui.use(['element', 'form', 'laydate', 'layer', 'table'], function () {
+        var element = layui.element,
+            form = layui.form,
+            laydate = layui.laydate,
+            $ = layui.jquery,
+            layer = layui.layer,
+            table = layui.table;
+        <!-- 动态获取时间周期信息 -->
+        $.ajax({
+            url: "{% url 'date_period_get' %}",
+            type: "get",
+            dataType: 'json',
+            success: function (d) {
+                $.each(d, function (i, v) {
+                    if ('{{ d.date_period.start_date|date:"Ymd" }}' + "--" + '{{ d.date_period.end_date|date:"Ymd" }}' === v) {
+                        $('#date_period').append("<option name='date_period' selected='selected' value='" + v + "'>" + v + "</option>");
+                    }
+                    else {
+                        $('#date_period').append("<option name='date_period' value='" + v + "'>" + v + "</option>");
+                    }
+                });
+                $('#date_period').trigger('change');
+                form.render();
+            }
+        });
+        <!-- 动态获取工作类别信息 -->
+        $.ajax({
+            url: "{% url 'job_type_get' %}",
+            type: "get",
+            dataType: 'json',
+            success: function (d) {
+                $.each(d, function (i, v) {
+                    if ('{{ d.job_type.name }}' === v) {
+                        $('#job_type').append("<option name='job_type' selected='selected' value='" + v + "'>" + v + "</option>");
+                    }
+                    else {
+                        $('#job_type').append("<option name='job_type' value='" + v + "'>" + v + "</option>");
+                    }
+                });
+                $('#job_type').trigger('change');
+                form.render();
+            }
+        });
+        <!-- 动态获取工作编号信息 -->
+        var jobCodeGet = function () {
+            $.ajax({
+                url: "{% url 'job_code_get' %}",
+                type: "get",
+                dataType: 'json',
+                success: function (d) {
+                    $.each(d, function (i, v) {
+                        if ('{{ d.job_code.code }}' === v) {
+                        $('#job_code').append("<option name='job_code' selected='selected' value='" + v + "'>" + v + "</option>");
+                    }
+                    else {
+                        $('#job_code').append("<option name='job_code' value='" + v + "'>" + v + "</option>");
+                    }
+                    });
+                    $('#job_code').trigger('change');
+                    form.render();
+                }
+            })
+        };
+        <!-- 监听工作类别下拉框触发动态获取工作编号信息 -->
+        var onChangeJobCode = function () {
+            form.on('select(job_type)', function (data) {
+                $("#job_code").html("");
+                $("#job_code").append("<option value=''>--选择或搜索工作编号--</option>");
+                $.ajax({
+                    url: "{% url 'job_code_get' %}",
+                    type: "get",
+                    data: {"job_type": data.value},
+                    dataType: 'json',
+                    success: function (d) {
+                        $.each(d, function (i, v) {
+                            if ('{{ d.job_code.code }}' === v) {
+                                $('#job_code').append("<option name='job_code' selected='selected' value='" + v + "'>" + v + "</option>");
+                            }
+                            else {
+                                $('#job_code').append("<option name='job_code' value='" + v + "'>" + v + "</option>");
+                            }
+                        });
+                        $('#job_code').trigger('change');
+                        form.render();
+                    }
+                })
+            })
+        };
+        {% if d %}
+            jobCodeGet();
+        {% else %}
+            onChangeJobCode();
+        {% endif %}
+        <!-- 动态获取进展状态信息 -->
+        $.ajax({
+            url: "{% url 'job_status_get' %}",
+            type: "get",
+            dataType: 'json',
+            success: function (d) {
+                $.each(d, function (i, v) {
+                    if ('{{ d.job_status.status }}' === v) {
+                        $('#job_status').append("<option name='job_status' selected value='" + v + "'>" + v + "</option>");
+                    }
+                    else {
+                        $('#job_status').append("<option name='job_status' value='" + v + "'>" + v + "</option>");
+                    }
+                });
+                $('#job_status').trigger('change');
+                form.render();
+            }
+        });
+        laydate.render({
+            elem: '#job_date'
+        });
+        $('#add_submit').click(function () {
+            var jobType = $('#job_type').val(),
+                jobStatus = $('#job_status').val(),
+                jobCode = $('#job_code').val(),
+                jobDate = $('#job_date').val(),
+                jobTime = $('#job_time').val(),
+                jobContent = $('#job_content').val(),
+                date_period = $('#date_period').val();
+            console.log(jobContent)
+            var dot_index = String(jobTime).indexOf(".") + 1;  //获取工时数字的小数点位置
+            if (jobType === "" || jobStatus === "" || jobCode === "" ||
+                jobDate === "" || jobTime === "" || jobContent === "" || date_period === "") {
+                layer.msg("请填写必填项内容");
+                return false;  //阻止表单提交
+            }
+            else if (jobTime <= 0 || jobTime > 3 ) {
+                layer.msg("工时为0~3之间的正整数或者一位小数，请核对！");
+                return false;
+            }
+            else if ((String(jobTime).length - dot_index) >= 4){
+                layer.msg("工时为0~3之间的正整数或者一位小数，请核对！");
+                return false;
+            }
+            else {
+                <!-- 如果成功触发表单提交，则获取父body的索引index，并在父页面关闭当前弹出层 -->
+                var index = parent.layer.getFrameIndex(window.name);
+                parent.layer.msg("提交成功");
+                parent.layer.close(index);
+            }
+        });
+    })
+</script>
+</body>
+</html>

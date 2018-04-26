@@ -1,0 +1,98 @@
+{% extends 'myadmin/base.html' %}
+
+{% block content %}
+    <div class="content-header">
+        <h2 class="layui-card-header" style="font-size: large;">仪表板</h2>
+    </div>
+    <div class="content-breadcrumb layui-bg-gray">
+        <span class="layui-breadcrumb" lay-separator=">">
+          <a href="{% url 'index' %}"><i class="layui-icon">&#xe68e;</i> 仪表板</a>
+          <a><cite>首页</cite></a>
+        </span>
+    </div>
+    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px;">
+        <legend>快速导航</legend>
+    </fieldset>
+    <div class="layui-row">
+        <div class="layui-col-md2" style="margin-left: 50px;" id="write_daily_report">
+            <div style="background-color: #01AAED; height: 55px; color: white;text-align: center;">
+                <i class="layui-icon" style="font-size: 45px;">&#xe637;</i>
+                <strong style="font-size: 15px;">日报填写</strong>
+            </div>
+            <div style="background-color: #2295c9; height: 20px; color: white;text-align: center;"><span>快速填写日报</span></div>
+        </div>
+        <div class="layui-col-md2" style="margin-left: 50px;" id="install_service">
+            <div style="background-color: #5FB878; height: 55px; color: white;text-align: center;">
+                <i class="layui-icon" style="font-size: 45px;">&#xe609;</i>
+                <strong style="font-size: 15px;">自动灌装</strong>
+            </div>
+            <div style="background-color: forestgreen; height: 20px; color: white;text-align: center;"><span>快速灌装服务器</span></div>
+        </div>
+        <div class="layui-col-md2" style="margin-left: 50px;" id="depart_asset">
+            <div style="background-color: #f7d0c6; height: 55px; color: white;text-align: center;">
+                <i class="layui-icon" style="font-size: 45px;">&#xe629;</i>
+                <strong style="font-size: 15px;">部门资产</strong>
+            </div>
+            <div style="background-color: #e21918; height: 20px; color: white;text-align: center;"><span>申请部门资产</span></div>
+        </div>
+    </div>
+    <fieldset class="layui-elem-field" style="margin-top: 30px;">
+        <legend>网站导航</legend>
+        <div style="margin-left: 45px;margin-bottom: 15px;margin-top: 15px;">
+            <div id="intrinsic">
+                <a class="layui-btn layui-btn-radius" href="http://10.255.0.10" target="_blank">Amoss</a>
+                <a class="layui-btn layui-btn-normal layui-btn-radius" href="https://wiki.antiy.cn" target="_blank">Confluence</a>
+                <a class="layui-btn layui-btn-warm layui-btn-radius" href="http://10.255.0.30" target="_blank">安天黑板报</a>
+                <a class="layui-btn layui-btn-radius" href="https://jira.antiy.org.cn/login.jsp" target="_blank">JIRA</a>
+            </div>
+            <div id="variable"></div>
+        </div>
+    </fieldset>
+{% endblock %}
+
+{% block js %}
+<script>
+layui.use(['element',], function () {
+    var element = layui.element,
+        $ = layui.jquery;
+    <!-- 监听快速导航点击事件 -->
+    $("#write_daily_report").click(function () {
+        $(location).prop('href', '{% url 'daily_report' %}')
+    });
+    $("#install_service").click(function () {
+        $(location).prop('href', '{% url 'install' %}')
+    });
+    $("#depart_asset").click(function () {
+        $(location).prop('href', '{% url 'depart_asset' %}')
+    });
+    <!-- 鼠标悬停加深 -->
+    $(function(){
+        $("#write_daily_report").hover(function(){
+            $("#write_daily_report strong").css("color", "SaddleBrown");
+            $("#write_daily_report div span").css("color", "Maroon");
+        },function(){
+            $("#write_daily_report strong").css("color", "white");
+            $("#write_daily_report div span").css("color", "white");
+        })
+    });
+    $(function(){
+        $("#install_service").hover(function(){
+            $("#install_service strong").css("color", "LightSalmon");
+            $("#install_service div span").css("color", "Maroon");
+        },function(){
+            $("#install_service strong").css("color", "white");
+            $("#install_service div span").css("color", "white");
+        })
+    });
+    $(function(){
+        $("#depart_asset").hover(function(){
+            $("#depart_asset strong").css("color", "#ffed4b");
+            $("#depart_asset div span").css("color", "#2041b4");
+        },function(){
+            $("#depart_asset strong").css("color", "white");
+            $("#depart_asset div span").css("color", "white");
+        })
+    });
+})
+</script>
+{% endblock %}

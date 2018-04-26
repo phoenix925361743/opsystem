@@ -1,0 +1,28 @@
+div.index-content {
+    border-style: groove;
+    width: 70em;
+    background-color: #FFFFFF;
+    margin: 30px;
+}
+
+p.content-content {
+    text-indent: 1.5em;
+    height: 7em;
+    text-wrap: normal;
+    word-wrap: break-word;
+    padding-bottom: 9px;
+    margin: 20px 0 20px;
+    border-bottom: 1px solid #EEEEEE;
+}
+
+div.blog {
+    background: #fff;
+    padding-bottom: 15px;
+    border-top: 2px solid #00CCFF;
+    box-shadow: 0 10px 6px -6px rgba(0,0,0,0.2);
+}
+
+p.content-info {
+    font-size: medium;
+}
+

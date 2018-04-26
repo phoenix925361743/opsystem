@@ -1,0 +1,553 @@
+{% extends 'myadmin/base.html' %}
+
+{% block content %}
+    <div class="content-header">
+        <h2 class="layui-card-header" style="font-size: large;">灌装管理</h2>
+    </div>
+    <div class="content-breadcrumb layui-bg-gray">
+        <span class="layui-breadcrumb" lay-separator=">">
+          <a href="{% url 'index' %}"><i class="layui-icon">&#xe68e;</i> 仪表板</a>
+          <a><cite>自动灌装</cite></a>
+            <a><cite>灌装管理</cite></a>
+        </span>
+    </div>
+    <div class="content-tabs">
+        <div class="layui-tab layui-tab-card" lay-filter="install" lay-allowclose="true">
+            <ul class="layui-tab-title">
+                <li class="layui-this" id="installManage" lay-id="installManage">灌装管理</li>
+                <li id="profileManage" lay-id="profileManage">配置文件管理</li>
+                <li id="ksManage" lay-id="ksManage">KS文件管理</li>
+            </ul>
+            <br/>
+            <div class="layui-tab-content">
+                <div class="layui-tab-item layui-show">
+                    <div class="tips">
+                        <div class="layui-collapse layui-field-box" lay-accordion="">
+                            <div class="layui-colla-item">
+                                <h2 class="layui-colla-title">使用说明-2018/03/22</h2>
+                                <div class="layui-colla-content">
+                                    <ul>
+                                        <li>1、展示所有可用于灌装的机器实例；</li>
+                                        <li>2、支持创建新的被灌装机器实例；</li>
+                                        <li><ul>
+                                            3、注意事项：
+                                            <li>①服务器的首启动项应设置为网络启动（<span style="color: red">只需要设置一次即可,整个模块的前提条件！</span>）！</li>
+                                            <li>②整个灌装流程为：服务器接入网络，并将首启动项设置为网络启动，
+                                                创建对应的机器实例绑定IP和MAC，等待管理员审核机器实例，审核通过后通过开启灌装开关，
+                                                打开服务器的灌装功能，并重启服务器等待灌装完成。</li>
+                                        </ul></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <br/>
+                        <fieldset class="layui-elem-field">
+                            <legend>机器实例</legend>
+                            <br/>
+                            <form class="layui-form layui-form-pane" id="search_form" style="margin-top: 10px;">
+                                <div class="reportTable layui-form-item" style="margin-left: 10px;">
+                                    <div class="layui-inline">
+                                        <input name="ip_address" id="ip_address" autocomplete="off"
+                                               placeholder="输入IP地址..." class="layui-input" type="text">
+                                    </div>
+                                    <div class="layui-inline">
+                                        <button class="layui-btn" id="search_system">搜索</button>
+                                        <button class="layui-btn" id="reset" type="reset">重置</button>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="layui-field-box">
+                                <div class="layui-field-box">
+                                    <div class="layui-btn-group">
+                                        <div style="margin-bottom: 0;">
+                                            <button id="addSystem" data-method="addSystem" data-type="auto"
+                                                    class="layui-btn layui-btn-sm">添加
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <table class="layui-hide" id="system_table" lay-filter="systemTable"></table>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="layui-tab-item">
+                    <div class="tips">
+                        <div class="layui-collapse layui-field-box" lay-accordion="">
+                            <div class="layui-colla-item">
+                                <h2 class="layui-colla-title">使用说明-2018/03/30</h2>
+                                <div class="layui-colla-content">
+                                    <ul>
+                                        <li>1、展示配置文件；</li>
+                                        <li>2、支持对配置文件进行增删。</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <br/>
+                        <fieldset class="layui-elem-field">
+                            <legend>配置文件</legend>
+                            <br/>
+                            <form class="layui-form layui-form-pane" id="search_form" style="margin-top: 10px;">
+                                <div class="reportTable layui-form-item" style="margin-left: 10px;">
+                                    <div class="layui-inline">
+                                        <input name="profile_name" id="profile_name" autocomplete="off"
+                                               placeholder="输入配置文件名称..." class="layui-input" type="text">
+                                    </div>
+                                    <div class="layui-inline">
+                                        <button class="layui-btn" id="search_profile">搜索</button>
+                                        <button class="layui-btn" id="reset" type="reset">重置</button>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="layui-field-box">
+                                <div class="layui-field-box">
+                                    <div class="layui-btn-group">
+                                        <div style="margin-bottom: 0;">
+                                            <button id="addProfile" data-method="addProfile" data-type="auto"
+                                                    class="layui-btn layui-btn-sm">添加
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <table id="profile_table" lay-filter="profileTable"></table>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="layui-tab-item">
+                    <div class="tips">
+                        <div class="layui-collapse layui-field-box" lay-accordion="">
+                            <div class="layui-colla-item">
+                                <h2 class="layui-colla-title">使用说明-2018/04/10</h2>
+                                <div class="layui-colla-content">
+                                    <ul>
+                                        <li>1、展示ks文件；</li>
+                                        <li>2、支持对ks文件进行增删。</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <br/>
+                        <fieldset class="layui-elem-field">
+                            <legend>KS文件</legend>
+                            <br/>
+                            <form class="layui-form layui-form-pane" id="search_form" style="margin-top: 10px;">
+                                <div class="reportTable layui-form-item" style="margin-left: 10px;">
+                                    <div class="layui-inline">
+                                        <input name="ks_name" id="ks_name" autocomplete="off"
+                                               placeholder="输入KS文件名称..." class="layui-input" type="text">
+                                    </div>
+                                    <div class="layui-inline">
+                                        <button class="layui-btn" id="search_ks">搜索</button>
+                                        <button class="layui-btn" id="reset" type="reset">重置</button>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="layui-field-box">
+                                <div class="layui-field-box">
+                                    <div class="layui-btn-group">
+                                        <div style="margin-bottom: 0;">
+                                            <button id="addKs" data-method="addKs" data-type="auto"
+                                                    class="layui-btn layui-btn-sm">添加
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <table id="ks_table" lay-filter="ksTable"></table>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <!-- 表格操作按钮 -->
+    <script type="text/html" id="actionTable">
+        <div class="layui-btn-group">
+            <a class="layui-btn layui-btn-xs" lay-event="edit"><i class="layui-icon">&#xe642;</i></a>
+            <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="privilege"><i class="layui-icon">&#xe612;</i></a>
+            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon">&#xe640;</i></a>
+        </div>
+    </script>
+    <!-- 表格操作按钮 -->
+    <script type="text/html" id="actionKsTable">
+        <div class="layui-btn-group">
+            <a class="layui-btn layui-btn-xs" lay-event="edit"><i class="layui-icon">&#xe642;</i></a>
+            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon">&#xe640;</i></a>
+        </div>
+    </script>
+    <!-- 表格操作按钮 -->
+    <script type="text/html" id="actionProfileTable">
+        <div class="layui-btn-group">
+            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon">&#xe640;</i></a>
+        </div>
+    </script>
+    <!-- 表格操作按钮 -->
+    <script type="text/html" id="logTool">
+        <div class="layui-btn-group">
+            <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="log"><i class="layui-icon">&#xe60e;</i></a>
+        </div>
+    </script>
+    <!-- 渲染表格样式，禁用未通过审核和不在授权列表里的机器实例的操作按钮 -->
+    <script type="text/html" id="installTpl">
+        {% verbatim %}
+        {{#  if(d.status === true){ }}
+        {{#  if(d.privilege_user.indexOf(d.user) === -1){ }}
+        <input type="checkbox" name="status" lay-skin="switch" lay-text="无权|无权" value="{{ d.ip }}"
+               lay-filter="installStatus" {{ d.netboot== true ? 'checked' : '' }} disabled>
+        {{#  } else { }}
+        <input type="checkbox" name="status" lay-skin="switch" lay-text="是|否" value="{{ d.ip }}"
+               lay-filter="installStatus" {{ d.netboot== true ? 'checked' : '' }}>
+        {{#  } }}
+        {{#  } else { }}
+        <input type="checkbox" name="status" lay-skin="switch" lay-text="未审|未审" value="{{ d.ip }}"
+               lay-filter="installStatus" {{ d.netboot== true ? 'checked' : '' }} disabled>
+        {{#  } }}
+        {% endverbatim %}
+    </script>
+    <script>
+        layui.use(["table", "form", "layer", "element"], function () {
+            var table = layui.table,
+                $ = layui.jquery,
+                layer = layui.layer,
+                element = layui.element,
+                form = layui.form;
+            <!-- 手动展开导航栏 -->
+            $("#install_nav_father").addClass("layui-nav-itemed");
+            <!-- 渲染机器实例表格 -->
+            table.render({
+                elem: '#system_table',
+                url: '{% url 'system_get' %}',
+                page: true,
+                limit: 20,
+                limits: [20, 40, 60, 80, 100],
+                id: 'system_table',
+                cols: [[
+                    {field: 'ip', title: 'IP地址', sort: true, align: "center"},
+                    {field: 'mac', title: 'MAC地址', align: "center"},
+                    {field: 'nic', title: '网口名称', align: "center"},
+                    {field: 'profile', title: '配置文件', align: "center"},
+                    {field: 'usage', title: '机器用途', align: "center"},
+                    {field: 'person_in_charge', title: '责任人', align: "center"},
+                    {field: 'netboot', title: '灌装开关', align: "center", templet: '#installTpl'},
+                    {field: 'log', title: '日志', width: 90, align: "center", toolbar: '#logTool'},
+                    {fixed: 'right', title: '操作', width: 110, align: 'center', toolbar: '#actionTable'}
+                ]]
+            });
+            <!-- 渲染配置文件数据表格 -->
+            table.render({
+                elem: '#profile_table',
+                url: '{% url 'profile_get' %}' + "?table=true",
+                page: true,
+                limit: 20,
+                limits: [20, 40, 60, 80, 100],
+                id: 'profile_table',
+                cols: [[
+                    {field: 'name', title: '名称', align: "center"},
+                    {field: 'ks', title: 'ks文件', align: "center"},
+                    {field: 'distro', title: '系统镜像', align: "center"},
+                    {field: 'owner', title: '所有者', align: "center"},
+                    {field: 'create_time', title: '创建时间', align: "center"},
+                    {field: 'desc', title: '描述说明', align: "center"},
+                    {field: 'action', fixed: 'right', title: '删除', width: "110", align: 'center', toolbar: '#actionProfileTable'},
+                ]]
+            });
+            <!-- 渲染KS文件数据表格 -->
+            table.render({
+                elem: '#ks_table',
+                url: '{% url 'ks_get' %}' + "?table=true",
+                page: true,
+                limit: 20,
+                limits: [20, 40, 60, 80, 100],
+                id: 'ks_table',
+                cols: [[
+                    {field: 'name', title: '名称', align: "center"},
+                    {field: 'owner', title: '创建者', align: "center"},
+                    {field: 'create_time', title: '创建时间', align: "center"},
+                    {field: 'desc', title: '描述说明', align: "center"},
+                    {field: 'action', fixed: 'right', title: '操作', width: "110", align: 'center', toolbar: '#actionKsTable'},
+                ]]
+            });
+            <!-- 添加机器实例 -->
+            $("#addSystem").click(function () {
+                layer.open({
+                    type: 2,
+                    title: ['添加机器实例', 'font-size:20px;'],
+                    id: 'add_system_form', //防止重复弹出
+                    content: '{% url "system_add_form" %}',
+                    area: ["400px", "500px"],
+                    maxmin: false,
+                    skin: 'layui-layer-lan',
+                    end: function () {
+                        table.reload('system_table');
+                    },
+                });
+            });
+            <!-- 添加配置文件 -->
+            $("#addProfile").click(function () {
+                layer.open({
+                    type: 2,
+                    title: ['添加配置文件', 'font-size:20px;'],
+                    id: 'add_profile_form', //防止重复弹出
+                    content: '{% url "profile_add_form" %}',
+                    area: ["400px", "500px"],
+                    maxmin: false,
+                    skin: 'layui-layer-lan',
+                    end: function () {
+                        table.reload('profile_table');
+                    },
+                });
+            });
+            <!-- 添加KS文件 -->
+            $("#addKs").click(function () {
+                layer.open({
+                    type: 2,
+                    title: ['添加KS文件', 'font-size:20px;'],
+                    id: 'add_ks_form', //防止重复弹出
+                    content: '{% url "ks_add_form" %}',
+                    area: ["800px", "600px"],
+                    maxmin: false,
+                    skin: 'layui-layer-lan',
+                    end: function () {
+                        table.reload('ks_table');
+                    },
+                });
+            });
+            <!-- 监听灌装状态切换 -->
+            form.on('switch(installStatus)', function (obj) {
+                $.ajax({
+                    url: "{% url 'install_switch' %}",
+                    type: "post",
+                    dataType: "json",
+                    data: {
+                        "status": obj.elem.checked,
+                        "ip": this.value,  //锁定数据用
+                    },
+                })
+            });
+            <!-- 监听profile表格按钮 -->
+            table.on('tool(profileTable)', function (obj) {
+                var data = obj.data,
+                    layEvent = obj.event,
+                    tr = obj.tr;
+                if (layEvent === 'del') {
+                    $.ajax({
+                        url: "{% url 'profile_delete_check' %}" + "?name=" + data.name,
+                        dataType: "text",
+                        type: "get",
+                        success: function (d) {
+                            if (d === "[]") {
+                                var msg = '确定彻底删除' + data["name"] + '这条记录吗？';
+                            }
+                            else {
+                                var msg = '确定彻底删除' + data["name"] + '这条记录吗？这将同时删除以下机器实例:' + d;
+                            }
+                            if ("{{ user.username }}" === data.owner) {
+                                layer.confirm(msg,
+                                    {
+                                        icon: 2,
+                                        title: "彻底删除" + data["name"] + "?"
+                                    },
+                                    function (index) {
+                                        $.post('{% url 'profile_delete' %}' + "?name=" + data.name);
+                                        obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                                        layer.msg("删除完毕");
+                                        layer.close(index);
+                                    }
+                                );
+                            }
+                            else {
+                                layer.msg("你不是该配置文件的所有者，无权删除!")
+                            }
+                        }
+                    });
+                }
+            });
+            <!-- 监听system表格按钮 -->
+            table.on('tool(systemTable)', function (obj) {
+                var data = obj.data,
+                    layEvent = obj.event,
+                    tr = obj.tr;
+                if (data.status === true) {
+                    if (data.privilege_user.indexOf(data.user) === -1) {
+                        layer.msg("你不在授权列表中，无权操作!")
+                    }
+                    else {
+                        if (layEvent === 'edit') {
+                            layer.open({
+                                type: 2,
+                                title: ['编辑机器信息', 'font-size:20px;'],
+                                id: 'add_system_form', //防止重复弹出
+                                content: '{% url "system_modify" %}' + "?ip=" + data.ip,
+                                area: ["400px", "500px"],
+                                maxmin: false,
+                                skin: 'layui-layer-lan',
+                                end: function () {
+                                    table.reload('system_table');
+                                },
+                            });
+                        }
+                        else if (layEvent === 'del') {
+                            if (data.person_in_charge === "{{ user.username }}") {
+                                layer.confirm(
+                                    '确定彻底删除' + data["ip"] + '这条记录吗？删除之后无法复原哦!',
+                                    {
+                                        icon: 2,
+                                        title: "彻底删除" + data["ip"] + "?"
+                                    },
+                                    function (index) {
+                                        $.post('{% url 'system_delete' %}' + "?ip=" + data.ip);
+                                        obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                                        layer.msg("删除完毕");
+                                        layer.close(index);
+                                    }
+                                );
+                            }
+                            else {
+                                layer.msg("你不是该机器实例的所有者，无权删除!")
+                            }
+                        }
+                        else if (layEvent === 'privilege') {
+                            if (data.person_in_charge === "{{ user.username }}") {
+                                layer.open({
+                                    type: 2,
+                                    title: ['机器授权', 'font-size:20px;'],
+                                    id: 'manage_privilege_form', //防止重复弹出
+                                    content: '{% url "privilege_manage" %}' + "?ip=" + data.ip,
+                                    area: ["1000px", "500px"],
+                                    maxmin: false,
+                                    skin: 'layui-layer-lan',
+                                });
+                            }
+                            else {
+                                layer.msg("你不是该机器实例的所有者，无权授权!")
+                            }
+                        }
+                        else if (layEvent === 'log') {
+                            $.ajax({
+                                url: "{% url 'system_log_get' %}" + "?ip=" + data.ip,
+                                type: "get",
+                                dataType: "text",
+                                success: function (d) {
+                                    element.tabAdd("install", {
+                                        title: "日志记录-" + data.ip,
+                                        content: d,
+                                        id: data.ip,
+                                    });  //动态增加一个tab
+                                    element.render('tab');
+                                    element.tabChange("install", data.ip); //tab跳转
+                                }
+                            })
+                        }
+                    }
+                }
+                else {
+                    layer.msg("该机器实例尚未激活，请联系管理员!")
+                }
+            });
+            <!-- 监听ks表格按钮 -->
+            table.on('tool(ksTable)', function (obj) {
+                var data = obj.data,
+                    layEvent = obj.event,
+                    tr = obj.tr;
+                if (layEvent === 'del') {
+                    $.ajax({
+                        url: "{% url 'ks_delete_check' %}" + "?name=" + data.name,
+                        dataType: "json",
+                        type: "get",
+                        success: function (d) {
+                            if (d === []) {
+                                var msg = '确定彻底删除' + data["name"] + '这条记录吗？';
+                            }
+                            else {
+                                var msg = '确定彻底删除' + data["name"] + '这条记录吗？这将同时删除以下配置文件: ' + d.profile_list + ',以下机器实例: ' + d.system_list;
+                            }
+                            if ("{{ user.username }}" === data.owner) {
+                                layer.confirm(msg,
+                                    {
+                                        icon: 2,
+                                        title: "彻底删除" + data["name"] + "?"
+                                    },
+                                    function (index) {
+                                        $.post('{% url 'ks_delete' %}' + "?name=" + data.name);
+                                        obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                                        layer.msg("删除完毕");
+                                        layer.close(index);
+                                    }
+                                );
+                            }
+                            else {
+                                layer.msg("你不是该ks文件的创建者，无权删除!")
+                            }
+                        }
+                    });
+                }
+                else if (layEvent === "edit") {
+                    if ("{{ user.username }}" === data.owner) {
+                        layer.open({
+                            type: 2,
+                            title: ['编辑KS文件', 'font-size:20px;'],
+                            id: 'add_ks_form_edit', //防止重复弹出
+                            content: '{% url "ks_add_form" %}' + "?name=" + data.name,
+                            area: ["800px", "600px"],
+                            maxmin: false,
+                            skin: 'layui-layer-lan',
+                            end: function () {
+                                table.reload('ks_table');
+                            },
+                        });
+                    }
+                    else {
+                        layer.msg("你不是该ks文件的创建者，无权修改!")
+                    }
+                }
+            });
+            <!-- 搜索重载机器实例表格 -->
+            $("#search_system").click(function () {
+                $("form").submit(function (e) {
+                    e.preventDefault();
+                });
+                table.reload('system_table', {
+                    page: {curr: 1},
+                    where: {
+                        ip: $("#ip_address").val(),
+                    }
+                })
+            });
+            <!-- 搜索重载配置文件表格 -->
+            $("#search_profile").click(function () {
+                $("form").submit(function (e) {
+                    e.preventDefault();
+                });
+                table.reload('profile_table', {
+                    page: {curr: 1},
+                    where: {
+                        name: $("#profile_name").val(),
+                    }
+                })
+            });
+            <!-- 搜索重载KS文件表格 -->
+            $("#search_ks").click(function () {
+                $("form").submit(function (e) {
+                    e.preventDefault();
+                });
+                table.reload('ks_table', {
+                    page: {curr: 1},
+                    where: {
+                        name: $("#ks_name").val(),
+                    }
+                })
+            });
+            <!-- 监听选项卡切换 -->
+            var layid = location.hash.replace(/^#install=/, '');
+            element.tabChange('install', layid);
+            element.on('tab(install)', function () {
+                location.hash = 'install=' + $(this).attr('lay-id');
+            });
+        })
+    </script>
+{% endblock %}

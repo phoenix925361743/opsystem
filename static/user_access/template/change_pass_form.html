@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>运维管理平台</title>
+    <link rel="stylesheet" href="/static/myadmin/layui/css/layui.css">
+</head>
+<body>
+<div class="layui-fluid" id="add_form" style="margin-left: 15px;">
+    <form class="layui-form layui-form-pane" style="margin-top: 15px;">
+        {% csrf_token %}
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">原密码</label>
+                <div class="layui-input-block">
+                    <input name="old_pass" id="old_pass" autocomplete="off" class="layui-input" type="password" placeholder="输入原密码...">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">新密码</label>
+                <div class="layui-input-block">
+                    <input name="new_pass1" id="new_pass1" autocomplete="off" class="layui-input" type="password" placeholder="输入新密码...">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">新密码</label>
+                <div class="layui-input-block">
+                    <input name="new_pass2" id="new_pass2" autocomplete="off" class="layui-input" type="password" placeholder="再次输入新密码...">
+                </div>
+            </div>
+        </div>
+        <div id="message" style="text-align: center"></div>
+        <div class="layui-form-item" style="margin-left: 35%;margin-top: 5px;">
+            <button type="submit" class="layui-btn layui-btn-sm" id="add_submit">提交</button>
+            <button type="reset" class="layui-btn layui-btn-sm">重置</button>
+{#            <button type="button" class="layui-btn layui-btn-sm layui-btn-warm" id="close">关闭</button>#}
+        </div>
+    </form>
+</div>
+<script src="/static/myadmin/layui/layui.js"></script>
+<script>
+    layui.use(['element', 'form', 'laydate', 'layer', 'table'], function () {
+        var element = layui.element,
+            form = layui.form,
+            $ = layui.jquery;
+        $("#add_submit").click(function () {
+            $("form").submit(function (event) {
+                event.preventDefault();
+            });
+            var old_pass = $("#old_pass").val(),
+                new_pass1 = $("#new_pass1").val(),
+                new_pass2 = $("#new_pass2").val();
+            if (old_pass === "" || new_pass1 === "" || new_pass2 === "") {
+                $("#message").html("<font color='red'>输入不能为空！</font>");
+                $("form").submit(function (event) {
+                    event.preventDefault();
+                })
+            }
+            else {
+                if (new_pass1 === new_pass2) {
+                    if (new_pass1.length > 15 || new_pass1.length < 6) {
+                        $("#message").html("<font color='red'>密码长度在6~15个字符间！</font>");
+                        $("form").submit(function (event) {
+                            event.preventDefault();
+                        })
+                    }
+                    else {
+                        $.ajax({
+                            url: '{% url "change_pass" %}',
+                            data: {
+                                'old_pass': old_pass,
+                                'new_pass': new_pass1,
+                            },
+                            type: "post",
+                            dataType: "json",
+                            success: function (d) {
+                                if (d.code === "0") {
+                                    $("#message").html("<font color='red'>原密码校验失败，请重试！</font>");
+                                }
+                                else if (d.code === "1") {
+                                    var index = parent.layer.getFrameIndex(window.name);
+                                    parent.layer.close(index);
+                                }
+                            }
+                        })
+                    }
+                }
+            }
+        });
+        <!-- 关闭按钮触发事件监听 -->
+        $("#close").click(function () {
+            var index = parent.layer.getFrameIndex(window.name);
+            parent.layer.close(index);
+        })
+    })
+</script>
+</body>
+</html>

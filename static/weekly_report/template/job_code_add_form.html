@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>运维管理平台</title>
+    <link rel="stylesheet" href="/static/myadmin/layui/css/layui.css">
+</head>
+<body>
+<div id="add_form" style="margin-left: 15px;">
+    <form class="layui-form layui-form-pane" action="{% url 'job_code_add' %}" method="post" id="add_form_content">
+        {% csrf_token %}
+        <div class="info"><strong style="color: red;">红色星号为必填项 *</strong></div>
+        {% if jc_record %}
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">工作名称</label>
+                    <div class="layui-input-block">
+                        <input name="job_name" id="job_name" autocomplete="off" value="{{ jc_record.job_name }}"
+                               class="layui-input" type="text" placeholder="输入工作名称...">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label"><span style="color: red;">* </span>工作编号</label>
+                    <div class="layui-input-block">
+                        <input name="job_code" id="job_code" autocomplete="off" value="{{ jc_record.code }}"
+                               class="layui-input" type="text" placeholder="输入工作编号...">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">旧版编号</label>
+                    <div class="layui-input-block">
+                        <input name="old_code" id="old_code" autocomplete="off" value="{{ jc_record.old_code }}"
+                               class="layui-input" type="text" placeholder="输入旧版工作编号...">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">甲方代号</label>
+                    <div class="layui-input-block">
+                        <input name="jf" id="jf" autocomplete="off" value="{{ jc_record.jf }}"
+                               class="layui-input" type="text" placeholder="输入甲方名称代号...">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">甲方单位名</label>
+                    <div class="layui-input-block">
+                        <input name="jf_name" id="jf_name" autocomplete="off" value="{{ jc_record.jf_name }}"
+                               class="layui-input" type="text" placeholder="输入甲方工作单位名称...">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">负责人</label>
+                    <div class="layui-input-block">
+                        <input name="person_in_charge" id="person_in_charge" autocomplete="off" value="{{ jc_record.person_in_charge }}"
+                               class="layui-input" type="text" placeholder="输入我方负责人姓名...">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label"><span style="color: red;">* </span>状态</label>
+                    <div class="layui-input-inline">
+                        <select name="status" id="status" lay-filter="status" lay-search="">
+                            <option value="">--选择状态--</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label"><span style="color: red;">* </span>工作类别</label>
+                    <div class="layui-input-inline">
+                        <select name="job_type" id="job_type" lay-filter="job_type" lay-search="">
+                            <option value="">--选择工作类别--</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item layui-hide">
+                <div class="layui-inline">
+                    <label class="layui-form-label">ID</label>
+                    <div class="layui-input-inline">
+                        <input name="j_id" id="j_id" autocomplete="off" value="{{ j_id }}"
+                               class="layui-input" type="text">
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">工作名称</label>
+                    <div class="layui-input-block">
+                        <input name="job_name" id="job_name" autocomplete="off"
+                               class="layui-input" type="text" placeholder="输入工作名称...">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label"><span style="color: red;">* </span>工作编号</label>
+                    <div class="layui-input-block">
+                        <input name="job_code" id="job_code" autocomplete="off"
+                               class="layui-input" type="text" placeholder="输入工作编号...">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">旧版编号</label>
+                    <div class="layui-input-block">
+                        <input name="old_code" id="old_code" autocomplete="off"
+                               class="layui-input" type="text" placeholder="输入旧版工作编号...">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">甲方代号</label>
+                    <div class="layui-input-block">
+                        <input name="jf" id="jf" autocomplete="off"
+                               class="layui-input" type="text" placeholder="输入甲方名称代号...">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">甲方单位名</label>
+                    <div class="layui-input-block">
+                        <input name="jf_name" id="jf_name" autocomplete="off"
+                               class="layui-input" type="text" placeholder="输入甲方工作单位名称...">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">负责人</label>
+                    <div class="layui-input-block">
+                        <input name="person_in_charge" id="person_in_charge" autocomplete="off"
+                               class="layui-input" type="text" placeholder="输入我方负责人姓名...">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label"><span style="color: red;">* </span>状态</label>
+                    <div class="layui-input-inline">
+                        <select name="status" id="status" lay-filter="status" lay-search="">
+                            <option value="">--选择状态--</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label"><span style="color: red;">* </span>工作类别</label>
+                    <div class="layui-input-inline">
+                        <select name="job_type" id="job_type" lay-filter="job_type" lay-search="">
+                            <option value="">--选择工作类别--</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        <div class="layui-form-item" style="margin-left: 35%;">
+            <button type="submit" class="layui-btn layui-btn-sm" id="add_submit" lay-filter="add">提交</button>
+            <button type="reset" class="layui-btn layui-btn-sm">重置</button>
+        </div>
+    </form>
+</div>
+<script src="/static/myadmin/layui/layui.js"></script>
+<script>
+    layui.use(["form", "table"], function () {
+        var table = layui.table,
+            form = layui.form,
+            layer = layui.layer,
+            $ = layui.jquery;
+        <!-- 动态获取项目进度状态记录 -->
+        $.ajax({
+            url: "{% url 'project_get' %}",
+            type: "get",
+            dataType: 'json',
+            success: function (d) {
+                $.each(d, function (i, v) {
+                    if ('{{ jc_record.status.status }}' === v){
+                        $('#status').append("<option name='status' selected='selected' value='" + v + "'>" + v + "</option>");
+                    }
+                    else{
+                        $('#status').append("<option name='status' value='" + v + "'>" + v + "</option>");
+                    }
+                });
+                $('#status').trigger('change');
+                form.render();
+            }
+        });
+        <!-- 动态获取工作类别信息 -->
+        $.ajax({
+            url: "{% url 'job_type_get' %}",
+            type: "get",
+            dataType: 'json',
+            success: function (d) {
+                $.each(d, function (i, v) {
+                    if ('{{ jc_record.job_type.name }}' === v) {
+                        $('#job_type').append("<option name='job_type' selected='selected' value='" + v + "'>" + v + "</option>");
+                    }
+                    else {
+                        $('#job_type').append("<option name='job_type' value='" + v + "'>" + v + "</option>");
+                    }
+                });
+                $('#job_type').trigger('change');
+                form.render();
+            }
+        });
+        <!-- 提交表单 -->
+        $('#add_submit').click(function () {
+            var job_name = $("#job_name").val(),
+                job_code = $("#job_code").val(),
+                old_code = $("#old_code").val(),
+                jf = $("#jf").val(),
+                jf_name = $("#jf_name").val(),
+                person_in_charge = $("#person_in_charge").val(),
+                job_type = $("#job_type").val(),
+                status = $("#status").val(),
+                j_id = '{{ j_id }}';
+            if (job_code === "" || status === "" || job_type === "") {
+                layer.msg("请填写必填项内容");
+                return false;
+            }
+            else {
+                <!-- 如果成功触发表单提交，则获取父body的索引index，并在父页面关闭当前弹出层 -->
+                var index = parent.layer.getFrameIndex(window.name);
+                parent.layer.msg("提交成功");
+                parent.layer.close(index);
+            }
+        });
+    })
+</script>
+</body>
+</html>

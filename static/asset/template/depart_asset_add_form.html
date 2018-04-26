@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>运维管理平台</title>
+    <link rel="stylesheet" href="/static/myadmin/layui/css/layui.css">
+</head>
+<body>
+<div class="layui-fluid" id="add_form" style="margin-left: 15px;">
+    <form class="layui-form layui-form-pane" id="add_form_content">
+        {% csrf_token %}
+        <div class="info"><strong style="color: red;">红色星号为必填项 *</strong></div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>资产编号</label>
+                <div class="layui-input-block">
+                    {% if d %}
+                        <input name="asset_number" id="asset_number" autocomplete="off" class="layui-input" type="number"
+                               placeholder="输入资产编号..." value="{{ d.asset_number }}">
+                    {% else %}
+                        <input name="asset_number" id="asset_number" autocomplete="off"
+                               class="layui-input" type="number" placeholder="输入资产编号...">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>资产名称</label>
+                <div class="layui-input-block">
+                    {% if d %}
+                        <input name="asset_name" id="asset_name" autocomplete="off" class="layui-input" type="text"
+                               placeholder="输入资产名称..." value="{{ d.name }}">
+                    {% else %}
+                        <input name="asset_name" id="asset_name" autocomplete="off"
+                               class="layui-input" type="text" placeholder="输入资产名称...">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">资产描述</label>
+                <div class="layui-input-block">
+                    {% if d %}
+                        <input name="desc" id="desc" autocomplete="off" class="layui-input" type="text"
+                               placeholder="输入资产描述..." value="{{ d.desc|default_if_none:'' }}">
+                    {% else %}
+                        <input name="desc" id="desc" autocomplete="off"
+                               class="layui-input" type="text" placeholder="输入资产描述...">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item layui-hide">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>提交类型</label>
+                <div class="layui-input-block">
+                    {% if d %}
+                        <input name="types" id="types" autocomplete="off" class="layui-input" type="text" value="update">
+                    {% else %}
+                        <input name="types" id="types" autocomplete="off" class="layui-input" type="text" value="submit">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item" style="margin-left: 35%;">
+            {% if d %}
+                <button type="button" class="layui-btn layui-btn-sm" id="add_submit">更新</button>
+            {% else %}
+                <button type="button" class="layui-btn layui-btn-sm" id="add_submit">提交</button>
+            {% endif %}
+            <button type="reset" class="layui-btn layui-btn-sm">重置</button>
+        </div>
+    </form>
+</div>
+<script src="/static/myadmin/layui/layui.js"></script>
+<script>
+    layui.use(['element', 'form', 'laydate', 'layer', 'table'], function () {
+        var element = layui.element,
+            form = layui.form,
+            $ = layui.jquery,
+            layer = layui.layer;
+        $('#add_submit').click(function () {
+            var asset_name = $('#asset_name').val(),
+                asset_number = $('#asset_number').val(),
+                desc = $('#desc').val();
+            if (asset_number === "" || asset_name === "") {
+                layer.msg("请填写必填项内容");
+                return false;  //阻止表单提交
+            }
+            else {
+                <!-- 如果成功触发表单提交，则获取父body的索引index，并在父页面关闭当前弹出层 -->
+                $.ajax({
+                    url: "{% url 'depart_asset_add' %}",
+                    type: "post",
+                    dataType: "text",
+                    data: {
+                        "asset_name": asset_name,
+                        "asset_number": asset_number,
+                        "desc": desc,
+                        "types": $("#types").val(),
+                    },
+                    success: function (d) {
+                        if (d === "ok") {
+                            var index = parent.layer.getFrameIndex(window.name);
+                            parent.layer.msg("提交成功!");
+                            parent.layer.close(index);
+                        }
+                        else {
+                            parent.layer.msg(d)
+                        }
+                    }
+                })
+            }
+        });
+    })
+</script>
+</body>
+</html>

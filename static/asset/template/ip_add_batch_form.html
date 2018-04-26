@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>运维管理平台</title>
+    <link rel="stylesheet" href="/static/myadmin/layui/css/layui.css">
+</head>
+<body>
+<div class="layui-fluid" id="add_form" style="margin-left: 15px;">
+    <form class="layui-form layui-form-pane" id="add_form_content">
+        {% csrf_token %}
+        <div class="info"><strong style="color: red;">红色星号为必填项 *</strong></div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>IP范围</label>
+                <div class="layui-input-inline" style="width: 150px;">
+                    <input id="start_ip" name="start_ip" placeholder="0.0.0.0" autocomplete="off" class="layui-input" type="text">
+                </div>
+                <div class="layui-form-mid">-</div>
+                <div class="layui-input-inline" style="width: 150px;">
+                    <input id="end_ip" name="end_ip" placeholder="0.0.0.0" autocomplete="off" class="layui-input" type="text">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>子网位数</label>
+                <div class="layui-input-block">
+                    <input name="prefix" id="prefix" autocomplete="off"
+                           class="layui-input" type="number" placeholder="输入子网位数...">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>网关</label>
+                <div class="layui-input-block">
+                    <input name="gateway" id="gateway" autocomplete="off"
+                           class="layui-input" type="text" placeholder="输入网关...">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item" style="margin-left: 35%;">
+            <button type="button" class="layui-btn layui-btn-sm" id="add_submit">提交</button>
+            <button type="reset" class="layui-btn layui-btn-sm">重置</button>
+        </div>
+    </form>
+</div>
+<script src="/static/myadmin/layui/layui.js"></script>
+<script>
+    layui.use(['element', 'form', 'laydate', 'layer', 'table'], function () {
+        var element = layui.element,
+            form = layui.form,
+            laydate = layui.laydate,
+            $ = layui.jquery,
+            layer = layui.layer,
+            table = layui.table;
+        $('#add_submit').click(function () {
+            var start_ip = $('#start_ip').val(),
+                end_ip = $("#end_ip").val(),
+                prefix = $('#prefix').val(),
+                gateway = $('#gateway').val();
+            var reg = /^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$/;
+            if (start_ip === "" || prefix === "" || gateway === "" || end_ip === "") {
+                layer.msg("请填写必填项内容");
+                return false;  //阻止表单提交
+            }
+            else if (reg.test(start_ip) === false || reg.test(end_ip) === false) {
+                layer.msg("请输入正确的IP地址！");
+                return false;
+            }
+            else if (reg.test(gateway) === false) {
+                layer.msg("请输入正确的网关IP地址！");
+                return false;
+            }
+            else {
+                <!-- 如果成功触发表单提交，则获取父body的索引index，并在父页面关闭当前弹出层 -->
+                var load = layer.load();
+                $.ajax({
+                    url: "{% url 'ip_address_add_batch' %}",
+                    type: "post",
+                    dataType: "json",
+                    data: {
+                        "start_ip": start_ip,
+                        "prefix": prefix,
+                        "gateway": gateway,
+                        "end_ip": end_ip,
+                    },
+                    success: function (d) {
+                        layer.close(load);
+                        if (d === 0) {
+                            var index = parent.layer.getFrameIndex(window.name);
+                            parent.layer.msg("提交成功!");
+                            parent.layer.close(index);
+                        }
+                        else if(d === 1) {
+                            parent.layer.msg("请填写相同网段的IP地址段!")
+                        }
+                        else if(d === 2) {
+                            parent.layer.msg("开始IP大于结束IP，请确认后重新输入!")
+                        }
+                        else{
+                            var index = parent.layer.getFrameIndex(window.name);
+                            parent.layer.msg("IP段添加完毕，下列IP地址记录已存在，请确认:" + d);
+                            parent.layer.close(index);
+                        }
+                    }
+                })
+            }
+        });
+    })
+</script>
+</body>
+</html>

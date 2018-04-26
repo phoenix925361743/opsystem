@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>运维管理平台</title>
+    <link rel="stylesheet" href="/static/myadmin/layui/css/layui.css">
+</head>
+<body>
+<div class="layui-fluid" id="add_form" style="margin-left: 15px;">
+    <form class="layui-form layui-form-pane" id="add_form_content">
+        {% csrf_token %}
+        <div class="info"><strong style="color: red;">红色星号为必填项 *</strong></div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>名称</label>
+                <div class="layui-input-block">
+                    <input name="name" id="name" autocomplete="off" class="layui-input" type="text"
+                           placeholder="输入配置文件名称...">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>KS文件</label>
+                <div class="layui-input-inline">
+                    <select name="ks" id="ks" lay-verify="ks" lay-search="">
+                        <option value="">--选择或搜索KS文件--</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>系统镜像</label>
+                <div class="layui-input-inline">
+                    <select name="distro" id="distro" lay-verify="distro" lay-search="">
+                        <option value="">--选择或搜索系统镜像--</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">描述说明</label>
+                <div class="layui-input-block">
+                    <input name="desc" id="desc" autocomplete="off"
+                           class="layui-input" type="text" placeholder="输入配置文件的描述说明...">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item layui-hide">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>提交类型</label>
+                <div class="layui-input-block">
+                    <input name="types" id="types" autocomplete="off" class="layui-input" type="text" value="submit">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item" style="margin-left: 35%;">
+            <button type="button" class="layui-btn layui-btn-sm" id="add_submit">提交</button>
+            <button type="reset" class="layui-btn layui-btn-sm">重置</button>
+        </div>
+    </form>
+</div>
+<script src="/static/myadmin/layui/layui.js"></script>
+<script>
+    layui.use(['element', 'form', 'laydate', 'layer', 'table'], function () {
+        var element = layui.element,
+            form = layui.form,
+            $ = layui.jquery,
+            layer = layui.layer,
+            table = layui.table;
+        <!-- 获取ks文件 -->
+        $.ajax({
+            url: "{% url 'ks_get' %}",
+            type: "get",
+            dataType: 'json',
+            success: function (d) {
+                $.each(d, function (i, v) {
+                    $('#ks').append("<option name='ks' value='" + v + "'>" + v + "</option>");
+                });
+                $('#ks').trigger('change');
+                form.render();
+            }
+        });
+        <!-- 获取系统镜像 -->
+        $.ajax({
+            url: "{% url 'distro_get' %}",
+            type: "get",
+            dataType: 'json',
+            async: false,
+            success: function (d) {
+                $.each(d, function (i, v) {
+                    $('#distro').append("<option name='distro' value='" + v + "'>" + v + "</option>");
+                });
+                $('#distro').trigger('change');
+                form.render();
+            }
+        });
+        $('#add_submit').click(function () {
+            var name = $('#name').val(),
+                ks = $('#ks').val(),
+                distro = $("#distro").val(),
+                classify = $("#classify").val(),
+                desc = $('#desc').val();
+            if (name === "" || ks === "" || distro === "") {
+                layer.msg("请填写必填项内容");
+                return false;
+            }
+            else {
+                $.ajax({
+                    url: "{% url 'profile_add' %}",
+                    type: "post",
+                    dataType: "text",
+                    data: {
+                        "name": name,
+                        "ks": ks,
+                        "desc": desc,
+                        "distro": distro,
+                    },
+                    async: false,
+                    success: function (d) {
+                        var index = parent.layer.getFrameIndex(window.name);
+                        parent.layer.msg("提交成功!");
+                        parent.layer.close(index);
+                    }
+                });
+            }
+        });
+    })
+</script>
+</body>
+</html>

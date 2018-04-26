@@ -1,0 +1,77 @@
+div.route-title {
+    font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+    font-size: medium;
+}
+
+#baseInfo {
+    font-size: large;
+}
+
+#baseInfo div {
+    font-family: "宋体", "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+    font-size: 18px;
+    margin-top: 20px;
+}
+
+#baseInfo div span {
+    margin-left: 20px;
+    line-height: 50px;
+}
+
+#hardConfig {
+    font-size: large;
+    margin-top: 20px;
+}
+
+#nodeInfo {
+    font-size: large;
+    margin-top: 20px;
+}
+
+#hardConfig span {
+    font-family: "宋体", "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+    font-size: 18px;
+    margin-left: 30px;
+    line-height: 50px;
+}
+
+#nodeInfo span {
+    font-family: "宋体", "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+    font-size: 18px;
+    margin-left: 30px;
+    line-height: 50px;
+}
+
+#nodeInfo a {
+    text-decoration: none;
+}
+
+#useInfo {
+    font-size: large;
+}
+
+#useInfo div {
+    font-family: "宋体", "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+    font-size: 18px;
+    margin-top: 20px;
+}
+
+#useInfo div span {
+    margin-left: 20px;
+    line-height: 50px;
+}
+
+#remoteAccess {
+    font-size: large;
+}
+
+#remoteAccess div {
+    font-family: "宋体", "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+    font-size: 18px;
+    margin-top: 20px;
+}
+
+#remoteAccess div span {
+    margin-left: 20px;
+    line-height: 50px;
+}

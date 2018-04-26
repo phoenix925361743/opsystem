@@ -1,0 +1,9 @@
+# Extend library:
+paramiko(ssh connect);
+hashlib(password encrypted);
+wmi(windows management interface);
+PIL(generate verification code);  # windows install:pip install Pillow;
+xlrd(read excel);
+xlwt(write excel);
+xlutils(read and write excel);
+pexpect(scp rid of password ask);

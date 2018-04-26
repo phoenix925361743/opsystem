@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>运维管理平台</title>
+    <link rel="stylesheet" href="/static/myadmin/layui/css/layui.css">
+</head>
+<body>
+<div class="layui-fluid" id="add_form" style="margin-left: 15px;">
+    <form class="layui-form layui-form-pane" id="add_form_content">
+        {% csrf_token %}
+        <div class="info"><strong style="color: red;">红色星号为必填项 *</strong></div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>资产</label>
+                <div class="layui-input-block">
+                    <input name="asset" id="asset" autocomplete="off" disabled type="text"
+                           class="layui-input layui-disabled" value="{{ asset_number }}-{{ asset.name }}">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>申请类型</label>
+                <div class="layui-input-inline">
+                    <select name="use_type" id="use_type" lay-search="">
+                        <option value="">--选择或搜索申请类型--</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: red;">* </span>描述说明</label>
+                <div class="layui-input-block">
+                    <textarea class="layui-textarea" rows="8" cols="30" name="desc" id="desc"
+                              placeholder="输入说明信息..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item" style="margin-left: 35%;">
+            <button type="button" class="layui-btn layui-btn-sm" id="add_submit">提交</button>
+            <button type="reset" class="layui-btn layui-btn-sm">重置</button>
+        </div>
+    </form>
+</div>
+<script src="/static/myadmin/layui/layui.js"></script>
+<script>
+    layui.use(['element', 'form', 'laydate', 'layer', 'table'], function () {
+        var element = layui.element,
+            form = layui.form,
+            $ = layui.jquery,
+            layer = layui.layer;
+        <!-- 获取资产使用状态-->
+        $.ajax({
+            url: "{% url 'use_type_get' %}",
+            type: "get",
+            dataType: 'json',
+            success: function (d) {
+                $.each(d, function (i, v) {
+                    $('#use_type').append("<option name='use_type' value='" + v + "'>" + v + "</option>");
+                });
+                $('#use_type').trigger('change');
+                form.render();
+            }
+        });
+        $('#add_submit').click(function () {
+            var use_type = $('#use_type').val(),
+                desc = $('#desc').val();
+            if (use_type === "" || desc === "") {
+                layer.msg("请填写必填项内容");
+                return false;  //阻止表单提交
+            }
+            else {
+                <!-- 如果成功触发表单提交，则获取父body的索引index，并在父页面关闭当前弹出层 -->
+                $.ajax({
+                    url: "{% url 'apply_add' %}",
+                    type: "post",
+                    dataType: "text",
+                    data: {
+                        "use_type": use_type,
+                        "desc": desc,
+                        "asset_number": '{{ asset_number }}',
+                    },
+                    success: function (d) {
+                        if (d === "ok") {
+                            var index = parent.layer.getFrameIndex(window.name);
+                            parent.layer.msg("提交成功,请等待审核!");
+                            parent.layer.close(index);
+                        }
+                        else {
+                            parent.layer.msg(d)
+                        }
+                    }
+                })
+            }
+        });
+    })
+</script>
+</body>
+</html>

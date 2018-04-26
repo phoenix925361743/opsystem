@@ -1,0 +1,366 @@
+{% extends 'myadmin/base.html' %}
+
+{% block content %}
+    <div class="content-header">
+        <h2 class="layui-card-header" style="font-size: large;">周报高级设置</h2>
+    </div>
+    <div class="content-breadcrumb layui-bg-gray">
+        <span class="layui-breadcrumb" lay-separator=">">
+          <a href="{% url 'index' %}"><i class="layui-icon">&#xe68e;</i> 仪表板</a>
+          <a><cite>周报管理</cite></a>
+            <a><cite>高级设置</cite></a>
+        </span>
+    </div>
+    <div class="layui-tab" lay-filter="advanced">
+        <ul class="layui-tab-title">
+            <li class="layui-this" id="job_code_tab" lay-id="jobCode">工作编号</li>
+            <li id="product_type_tab" lay-id="productType">产品分类</li>
+{#            <li id="team_building_tab">团队建设</li>#}
+{#            <li id="job_type_tab">工作类别</li>#}
+{#            <li id="job_status_tab">进展状态</li>#}
+        </ul>
+        <br/>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                <div class="tips">
+                    <div class="layui-collapse layui-field-box" lay-accordion="">
+                        <div class="layui-colla-item">
+                            <h2 class="layui-colla-title">使用说明-2018/02/08</h2>
+                            <div class="layui-colla-content">
+                                <ul>
+                                    <li>1、本页面主要用于管理当前已有的项目工作编号；</li>
+                                    <li>2、提供excel的导入导出功能，用于快速添加工作编号或者打印所有工作编号；</li>
+                                    <li>3、支持对工作编号进行筛选，包括新编号、旧编号等进行筛选。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                </div>
+                <fieldset class="layui-elem-field">
+                    <legend>工作编号数据记录</legend>
+                    <br/>
+                    <form class="layui-form layui-form-pane" id="search_form" style="margin-top: 10px;">
+                        <div class="layui-form-item" style="margin-left: 10px;">
+                            <div class="layui-inline">
+                                <input name="jc_search" id="jc_search" autocomplete="off"
+                                       placeholder="输入旧编号、新编号..." class="layui-input" type="text">
+                            </div>
+                            <div class="layui-inline">
+                                <button class="layui-btn layui-btn-sm" id="job_code_search">搜索</button>
+                                <button class="layui-btn layui-btn-sm" type="reset">重置</button>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="layui-field-box">
+                        <div class="layui-field-box">
+                            <div class="layui-btn-group">
+                                <button id="add_job_code" class="layui-btn layui-btn-sm">添加</button>
+                                <button class="layui-btn layui-btn-sm" id="upload">上传</button>
+                                <button class="layui-btn layui-btn-sm layui-disabled" id="export">导出</button>
+                            </div>
+                        </div>
+                        <table id="jobCodeTable" lay-filter="job_code_table"></table>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="layui-tab-item">
+                <div class="tips">
+                    <div class="layui-collapse layui-field-box" lay-accordion="">
+                        <div class="layui-colla-item">
+                            <h2 class="layui-colla-title">使用说明-2018/02/09</h2>
+                            <div class="layui-colla-content">
+                                <ul>
+                                    <li>1、本页面主要用于管理当前已有的产品分类以及产品子分类；</li>
+                                    <li>2、支持对简单的筛选和对数据的增删改查。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                </div>
+                <fieldset class="layui-elem-field">
+                    <legend>产品分类</legend>
+                    <br/>
+                    <div class="layui-inline" style="margin-left: 15px;">
+                        <button id="add_product_type" class="layui-btn layui-btn-sm">添加</button>
+                    </div>
+                    <div class="layui-field-box">
+                        <table id="productTypeTable" lay-filter="product_type_table"></table>
+                    </div>
+                </fieldset>
+                <br/>
+                <fieldset class="layui-elem-field">
+                    <legend>产品子分类</legend>
+                    <br/>
+                    <div class="layui-inline" style="margin-left: 15px;">
+                        <button id="add_sub_product" class="layui-btn layui-btn-sm">添加</button>
+                    </div>
+                    <div class="layui-field-box">
+                        <table id="subProductTable" lay-filter="sub_product_table"></table>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+<!-- 表格操作按钮 -->
+<script type="text/html" id="toolAction">
+    <div class="layui-btn-group">
+        <a class="layui-btn layui-btn-xs" lay-event="edit"><i class="layui-icon">&#xe642;</i></a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon">&#xe640;</i></a>
+    </div>
+</script>
+<script>
+layui.use(['table', 'form', 'upload'], function () {
+    var table = layui.table,
+        form = layui.form,
+        layer = layui.layer,
+        upload = layui.upload,
+        element = layui.element,
+        $ = layui.jquery;
+    $("#weekly_report_nav_father").addClass("layui-nav-itemed");
+    <!-- 渲染工作编号数据表格 -->
+    table.render({
+        elem: '#jobCodeTable',
+        url: '{% url 'job_code_get' %}' + '?table=1',
+        page: true,
+        limit: 20,
+        limits: [20, 40, 60, 100],
+        id: 'job_code_table',
+        cols: [[
+            {field: 'id', title: 'ID', align: "center", width: 100, sort: true},
+            {field: 'job_name', title: '工作名称', align: "center"},
+            {field: 'job_code', title: '工作编号', align: "center"},
+            {field: 'old_code', title: '旧版编号', align: "center"},
+            {field: 'jf', title: '甲方', align: "center"},
+            {field: 'jf_name', title: '甲方单位名称', align: "center"},
+            {field: 'person_in_charge', title: '我方负责人', align: "center"},
+            {field: 'status', title: '进度状态', align: "center"},
+            {field: 'job_type', title: '工作类别', align: "center"},
+            {fixed: 'right', title: '操作', width:100, align: 'center', toolbar: '#toolAction'}
+        ]]
+    });
+    <!-- 渲染产品分类数据表格 -->
+    table.render({
+        elem: '#productTypeTable',
+        url: '{% url 'product_type_get' %}' + '?table=1',
+        page: true,
+        limit: 10,
+        limits: [10, 20, 40, 100],
+        id: 'product_type_table',
+        cols: [[
+            {field: 'id', title: 'ID', align: "center", width: 100, sort: true},
+            {field: 'type_name', title: '产品分类', align: "center"},
+            {field: 'desc', title: '产品说明', align: "center"},
+            {fixed: 'right', title: '操作', width:100, align: 'center', toolbar: '#toolAction'}
+        ]]
+    });
+    <!-- 渲染产品子分类数据表格 -->
+    table.render({
+        elem: '#subProductTable',
+        url: '{% url 'sub_product_get' %}' + '?table=1',
+        page: true,
+        limit: 10,
+        limits: [10, 20, 40, 100],
+        id: 'sub_product_table',
+        cols: [[
+            {field: 'id', title: 'ID', align: "center", width: 100, sort: true},
+            {field: 'type_name', title: '产品分类', align: "center"},
+            {field: 'sub_type_name', title: '产品子分类', align: "center"},
+            {field: 'desc', title: '产品说明', align: "center"},
+            {fixed: 'right', title: '操作', width: 100, align: 'center', toolbar: '#toolAction'}
+        ]]
+    });
+    <!-- 添加项目编号 -->
+    $("#add_job_code").click(function () {
+        layer.open({
+            type: 2,
+            title: '添加项目编号',
+            id: 'addPlanReport',
+            skin: 'layui-layer-lan',
+            area: ["1000px", "500px"],
+            content: '{% url 'job_code_add_form' %}',
+            anim: 2,
+            end: function () {
+                table.reload('job_code_table');
+            }
+        })
+    });
+    <!-- 触发项目编号搜索 -->
+    $("#job_code_search").click(function () {
+        $("form").submit(function (event) {
+            event.preventDefault();
+        });
+        table.reload('job_code_table', {
+            page: {curr: 1},
+            where: {
+                jc_search: $("#jc_search").val(),
+            }
+        })
+    });
+    <!-- 监听项目编号表格按钮 -->
+    table.on('tool(job_code_table)', function (obj) {
+        var data = obj.data,
+            layEvent = obj.event,
+            tr = obj.tr;
+        if (layEvent === 'edit') {
+            layer.open({
+                type: 2,
+                title: '编辑项目编号',
+                id: 'editProductType',
+                skin: 'layui-layer-lan',
+                area: ["1000px", "500px"],
+                content: '{% url 'job_code_add_form' %}' + '?id=' + data.id,
+                anim: 2,
+                end: function () {
+                    table.reload('job_code_table');
+                }
+            })
+        }
+        else if (layEvent === "del") {
+            layer.confirm(
+                '确定删除ID为' + data['id'] + '的项目编号记录吗？',
+                {
+                    icon: 2,
+                    title: "删除" + data["id"] + "?"
+                },
+                function (index) {
+                    $.post('{% url 'job_code_delete' %}', {"j_id": data["id"]});
+                    obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                    layer.close(index);
+                });
+        }
+    });
+    <!-- 监听产品分类表格按钮 -->
+    table.on('tool(product_type_table)', function (obj) {
+        var data = obj.data,
+            layEvent = obj.event,
+            tr = obj.tr;
+        if (layEvent === 'edit') {
+            layer.open({
+                type: 2,
+                title: '编辑产品分类',
+                id: 'editProductType',
+                skin: 'layui-layer-lan',
+                area: ["1000px", "500px"],
+                content: '{% url 'product_type_add_form' %}' + '?id=' + data.id,
+                anim: 2,
+                end: function () {
+                    table.reload('product_type_table');
+                }
+            })
+        }
+        else if (layEvent === "del") {
+            layer.confirm(
+                '确定删除ID为' + data['id'] + '的产品分类记录吗？',
+                {
+                    icon: 2,
+                    title: "删除" + data["id"] + "?"
+                },
+                function (index) {
+                    $.post('{% url 'product_type_delete' %}', {"j_id": data["id"]});
+                    obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                    table.reload('sub_product_table');
+                    layer.close(index);
+                });
+        }
+    });
+        <!-- 监听产品子分类表格按钮 -->
+    table.on('tool(sub_product_table)', function (obj) {
+        var data = obj.data,
+            layEvent = obj.event,
+            tr = obj.tr;
+        if (layEvent === 'edit') {
+            layer.open({
+                type: 2,
+                title: '编辑产品子分类',
+                id: 'editProductType',
+                skin: 'layui-layer-lan',
+                area: ["1000px", "500px"],
+                content: '{% url 'sub_product_add_form' %}' + '?id=' + data.id,
+                anim: 2,
+                end: function () {
+                    table.reload('sub_product_table');
+                }
+            })
+        }
+        else if (layEvent === "del") {
+            layer.confirm(
+                '确定删除ID为' + data['id'] + '的产品子分类记录吗？',
+                {
+                    icon: 2,
+                    title: "删除" + data["id"] + "?"
+                },
+                function (index) {
+                    $.post('{% url 'sub_product_delete' %}', {"j_id": data["id"]});
+                    obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                    layer.close(index);
+                });
+        }
+    });
+    <!-- 触发添加弹出层 -->
+    $("#add_product_type").click(function () {
+        layer.open({
+            type: 2,
+            title: '添加产品分类',
+            id: 'addProductType',
+            skin: 'layui-layer-lan',
+            area: ["1000px", "500px"],
+            content: '{% url 'product_type_add_form' %}',
+            anim: 2,
+            end: function () {
+                table.reload('product_type_table');
+            }
+        })
+    });
+    <!-- 触发添加弹出层 -->
+    $("#add_sub_product").click(function () {
+        layer.open({
+            type: 2,
+            title: '添加产品子分类',
+            id: 'addSubProductType',
+            skin: 'layui-layer-lan',
+            area: ["1000px", "500px"],
+            content: '{% url 'sub_product_add_form' %}',
+            anim: 2,
+            end: function () {
+                table.reload('sub_product_table');
+            }
+        })
+    });
+    <!-- 上传项目编号excel -->
+    upload.render({
+        elem: '#upload',
+        url: '{% url "job_code_upload" %}',
+        accept: 'file', //普通文件
+        exts: 'xls|xlsx', //只允许上传excel文件
+        field: 'job_code_excel', //上传文件域的字段名
+        before: function (obj) {
+            layer.load(2); //上传文件并等待处理的加载样式
+        },
+        done: function (data) {
+            layer.closeAll("loading");
+            var msg = "处理完毕，" + data.success_count + "条数据创建成功，" + data.error_count + "条数据创建失败!";
+            if (data.error_count !== 0) {
+                msg += "创建失败的行数为" + data.error_row + "!"
+            }
+            layer.alert(msg);
+            table.reload("job_code_table")
+        },
+        error: function (index, upload) {
+            layer.closeAll("loading");
+            layer.msg("处理失败")
+        }
+    });
+    <!-- 监听选项卡切换 -->
+    var layid = location.hash.replace(/^#advanced=/, '');
+    element.tabChange('advanced', layid);
+    element.on('tab(advanced)', function () {
+        location.hash = 'advanced=' + $(this).attr('lay-id');
+    });
+})
+</script>
+{% endblock %}

@@ -1,0 +1,643 @@
+{% extends 'myadmin/base.html' %}
+
+{% block css %}
+    <style>
+        table {
+            table-layout: fixed;
+            word-wrap: break-word;
+        }
+
+        td {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="content-header">
+        <h2 class="layui-card-header" style="font-size: large;">个人周报管理</h2>
+    </div>
+    <div class="content-breadcrumb layui-bg-gray">
+        <span class="layui-breadcrumb" lay-separator=">">
+          <a href="{% url 'index' %}"><i class="layui-icon">&#xe68e;</i> 仪表板</a>
+          <a><cite>周报管理</cite></a>
+            <a><cite>个人周报管理</cite></a>
+        </span>
+    </div>
+    <div class="content-tabs">
+        <div class="layui-tab" lay-filter="daily_report">
+            <ul class="layui-tab-title">
+                <li class="layui-this" id="dailyReportManage" lay-id="dailyReportManage">日报管理</li>
+                <li id="planReportManage" lay-id="planReportManage">下周计划管理</li>
+                <li id="weeklyReportManage" lay-id="weeklyReportManage">周报管理</li>
+                <li id="trash" lay-id="trash">回收站</li>
+            </ul>
+            <br/>
+            <div class="layui-tab-content">
+                <div class="layui-tab-item layui-show">
+                    <div class="tips">
+                        <div class="layui-collapse layui-field-box" lay-accordion="">
+                            <div class="layui-colla-item">
+                                <h2 class="layui-colla-title">使用说明-2018/03/16</h2>
+                                <div class="layui-colla-content">
+                                    <ul>
+                                        <li>1、用户可填写日报；</li>
+                                        <li>2、用户可通过工作编号、日期、关键字(模糊)进行日报数据筛选；</li>
+                                        <li>3、筛选搜索支持联合查询；</li>
+                                        <li>4、支持对日报数据进行编辑并保存提交；</li>
+                                        <li>5、支持日报数据移入回收站；</li>
+                                        <li>6、表头带有箭头的列支持排序，但是不支持联合排序;</li>
+                                        <li>7、工时8小时为1。</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <br/>
+                    </div>
+                    <fieldset class="layui-elem-field">
+                        <legend>个人日报记录</legend>
+                        <br/>
+                        <form class="layui-form layui-form-pane" id="search_form" style="margin-top: 10px;">
+                            <div class="reportTable layui-form-item" style="margin-left: 10px;">
+                                <div class="layui-inline">
+                                    <select name="date_period" id="date_period" lay-filter="date_period" lay-search="">
+                                        <option value="">--选择或搜索日报周期--</option>
+                                    </select>
+                                </div>
+                                <div class="layui-inline">
+                                    <select name="job_code" id="job_code1" lay-filter="job_code1" lay-search="">
+                                        <option value="">--选择或搜索工作编号--</option>
+                                    </select>
+                                </div>
+                                <div class="layui-inline">
+                                    <input name="job_date1" id="job_date1" autocomplete="off" class="layui-input"
+                                           type="text" placeholder="选择日期...">
+                                </div>
+                                <div class="layui-inline">
+                                    <input name="job_content1" id="job_content1" autocomplete="off"
+                                           placeholder="输入工作内容关键字..." class="layui-input" type="text">
+                                </div>
+                                <div class="layui-inline">
+                                    <button class="layui-btn" id="search_daily">搜索</button>
+                                    <button class="layui-btn" id="reset" type="reset">重置</button>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="layui-field-box">
+                            <div class="layui-field-box">
+                                <div class="layui-btn-group">
+                                    <div class="add_report" id="add_report" style="margin-bottom: 0;">
+                                        <button id="addReport" data-method="addReport" data-type="auto"
+                                                class="layui-btn layui-btn-sm add_report">添加
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <table class="layui-hide" id="daily_report" lay-filter="dailyTable"></table>
+                        </div>
+                    </fieldset>
+                </div>
+                <div class="layui-tab-item">
+                    <div class="tips">
+                        <div class="layui-collapse layui-field-box" lay-accordion="">
+                            <div class="layui-colla-item">
+                                <h2 class="layui-colla-title">使用说明-2018/04/16</h2>
+                                <div class="layui-colla-content">
+                                    <ul>
+                                        <li>1、支持下周周报计划的增删改；</li>
+                                        <li>2、支持多条件联合查询.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <br/>
+                    </div>
+                    <fieldset class="layui-elem-field">
+                        <legend>下周计划记录</legend>
+                        <br/>
+                        <form class="layui-form layui-form-pane" id="search_form" style="margin-top: 10px;">
+                            <div class="reportTable layui-form-item" style="margin-left: 10px;">
+                                <div class="layui-inline">
+                                    <select name="date_period2" id="date_period2" lay-filter="date_period2" lay-search="">
+                                        <option value="">--选择或搜索日报周期--</option>
+                                    </select>
+                                </div>
+                                <div class="layui-inline">
+                                    <button class="layui-btn" id="search_plan_report">搜索</button>
+                                    <button class="layui-btn" id="reset" type="reset">重置</button>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="layui-field-box">
+                            <div class="layui-field-box">
+                                <div class="layui-btn-group">
+                                    <div class="add_report" id="add_report" style="margin-bottom: 0;">
+                                        <button id="addPlanReport" data-method="addPlanReport" data-type="auto"
+                                                class="layui-btn layui-btn-sm add_plan_report">添加
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <table class="layui-hide" id="plan_report" lay-filter="planTable"></table>
+                        </div>
+                    </fieldset>
+                </div>
+                <div class="layui-tab-item">
+                    <fieldset class="layui-elem-field">
+                        <div class="layui-field-box">
+                            <div class="layui-collapse">
+                                <div class="layui-colla-item">
+                                    <h2 class="layui-colla-title">使用说明-2018/03/16</h2>
+                                    <div class="layui-colla-content">
+                                        <ul>
+                                            <li>1、自动汇总日报数据（不包含回收站数据）；</li>
+                                            <li>2、本页面使用动态流加载，一次加载一周的数据，可以通过点击加载更多来加载往期的周报数据；</li>
+                                            <li>3、支持添加下周计划数据；</li>
+                                            <li>4、支持删除下周计划数据；</li>
+                                            <li>5、周报导出功能暂未启用，后期将会添加。</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <fieldset class="layui-elem-field">
+                        <legend>个人周报汇总</legend>
+                        <div class="layui-field-box">
+                            <br/>
+                            <button class="layui-btn layui-btn-sm layui-btn-normal" id="export" style="margin-left: 20px;">导出周报</button>
+                            <br/>
+                        </div>
+                        <div class="layui-field-box">
+                            <ul class="layui-timeline flow-default" id="weekly_report"></ul>
+                        </div>
+                    </fieldset>
+                </div>
+                <div class="layui-tab-item">
+                    <fieldset class="layui-elem-field">
+                        <div class="layui-field-box">
+                            <div class="layui-collapse">
+                                <div class="layui-colla-item">
+                                    <h2 class="layui-colla-title">使用说明-2018/03/16</h2>
+                                    <div class="layui-colla-content">
+                                        <ul>
+                                            <li>1、还原功能会将选定数据重新添加到日报记录和周报管理中；</li>
+                                            <li>2、彻底删除将会从数据库中直接清除该条记录，属于不可逆操作，请谨慎操作。</li>
+                                            <li>3、回收站的数据是从日报记录的表格中删除后移入至此。</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <fieldset class="layui-elem-field">
+                        <legend>回收站数据</legend>
+                        <div class="layui-field-box">
+                            <table class="layui-hide" id="delete_report" lay-filter="trashTable"></table>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <!-- 表格操作按钮 -->
+    <script type="text/html" id="actionTable">
+        <div class="layui-btn-group">
+            <a class="layui-btn layui-btn-xs" lay-event="edit"><i class="layui-icon">&#xe642;</i></a>
+            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon">&#xe640;</i></a>
+        </div>
+    </script>
+    <!-- 回收站表格操作按钮 -->
+    <script type="text/html" id="trashTable">
+        <div class="layui-btn-group">
+            <a class="layui-btn layui-btn-xs" lay-event="reback"><i class="layui-icon">&#xe603;</i></a>
+            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delete"><i class="layui-icon">&#xe640;</i></a>
+        </div>
+    </script>
+    <script type="text/html" id="summaryStatus">
+        <!-- 渲染表格样式，设置审核状态的颜色 -->
+        {% verbatim %}
+            {{#  if(d.summary_status === '通过'){ }}
+            <span style="color:#32CD32;">{{ d.summary_status }}</span>
+            {{#  } else if(d.summary_status === '未审') { }}
+            <span style="color:#1E90FF;">{{ d.summary_status }}</span>
+            {{#  } else { }}
+            <span style="color:#DC143C;">{{ d.summary_status }}</span>
+            {{#  } }}
+        {% endverbatim %}
+    </script>
+    <script>
+        layui.use(['layer', 'form', 'laydate', 'layedit', 'element', 'table', 'flow'], function () {
+            var $ = layui.jquery;
+            var form = layui.form,
+                layer = layui.layer,
+                layedit = layui.layedit,
+                laydate = layui.laydate,
+                element = layui.element,
+                flow = layui.flow;
+            $("#weekly_report_nav_father").addClass("layui-nav-itemed");
+            var tableDailyReport = layui.table;
+            laydate.render({
+                elem: '#job_date1'
+            });
+            <!-- 动态获取工作编号信息 -->
+            $.ajax({
+                url: "{% url 'job_code_get' %}",
+                type: "get",
+                dataType: 'json',
+                success: function (d) {
+                    $.each(d, function (i, v) {
+                        $('#job_code1').append("<option name='job_code' value='" + v + "'>" + v + "</option>");
+                    });
+                    $('#job_code1').trigger('change');
+                    form.render();
+                }
+            });
+            <!-- 动态获取日报周期 -->
+            $.ajax({
+                url: "{% url 'date_period_get' %}",
+                type: "get",
+                dataType: 'json',
+                success: function (d) {
+                    $.each(d, function (i, v) {
+                        $('#date_period').append("<option name='date_period' value='" + v + "'>" + v + "</option>");
+                        $('#date_period2').append("<option name='date_period2' value='" + v + "'>" + v + "</option>");
+                    });
+                    $('#date_period').trigger('change');
+                    $('#date_period2').trigger('change');
+                    form.render();
+                }
+            });
+            <!-- 流加载当前周报数据 -->
+            flow.load({
+                elem: "#weekly_report",
+                done: function (page, next) {
+                    var lis = [];
+                    $.ajax({
+                        url: '{% url "weekly_report_get" %}',
+                        type: 'get',
+                        dataType: 'json',
+                        data: {
+                            page: page,
+                        },
+                        success: function (d) {
+                            $.each(d.report_data, function (dp, data_dict) {
+                                var weekly_report_table = "";
+                                var plan_report_table = "";
+                                $.each(data_dict.weekly_report, function (index, data) {
+                                    weekly_report_table += '<tr>' +
+                                        '<td title="' + data.job_date + '">' + data.job_date + '</td>' +
+                                        '<td title="' + data.job_type + '">' + data.job_type + '</td>' +
+                                        '<td title="' + data.job_code + '">' + data.job_code + '</td>' +
+                                        '<td title="' + data.job_content + '">' + data.job_content + '</td>' +
+                                        '<td title="' + data.job_time + '">' + data.job_time + '</td>' +
+                                        '<td title="' + data.job_block + '">' + data.job_block + '</td>' +
+                                        '<td title="' + data.job_status + '">' + data.job_status + '</td>' +
+                                        '<td title="' + data.job_plan + '">' + data.job_plan + '</td>' +
+                                        '<td title="' + data.summary_status + '">' + data.summary_status + '</td>' +
+                                        '<td title="' + data.remark + '">' + data.remark + '</td>' +
+                                        '</tr>';
+                                });
+                                $.each(data_dict.plan_report, function (index, data) {
+                                    plan_report_table += '<tr>' +
+                                        '<td title="' + data.job_date + '">' + data.job_date + '</td>' +
+                                        '<td title="' + data.job_type + '">' + data.job_type + '</td>' +
+                                        '<td title="' + data.job_code + '">' + data.job_code + '</td>' +
+                                        '<td title="' + data.job_content + '">' + data.job_content + '</td>' +
+                                        '<td title="' + data.job_time + '">' + data.job_time + '</td>' +
+                                        '<td title="' + data.start_date + '">' + data.start_date + '</td>' +
+                                        '<td title="' + data.end_date + '">' + data.end_date + '</td>' +
+                                        '<td title="' + data.start_date_r + '">' + data.start_date_r + '</td>' +
+                                        '<td title="' + data.end_date_r + '">' + data.end_date_r + '</td>' +
+                                        '<td title="' + data.job_status + '">' + data.job_status + '</td>' +
+                                        '<td title="' + data.remark + '">' + data.remark + '</td>' +
+                                        '</tr>';
+                                });
+                                var hc = '<li class="layui-timeline-item"><i class="layui-icon layui-timeline-axis">' +
+                                    '</i><div class="layui-timeline-content layui-text">' +
+                                    '<h3 class="layui-timeline-title layui-bg-green">' + dp + '</h3><table class="layui-table">' +
+                                    '<caption><strong style="color:black;">本周任务</strong></caption><thead><tr><th>日期</th>' +
+                                    '<th>工作类别</th><th>工作编号</th><th>工作内容</th><th>工时</th><th>工作阻碍</th>' +
+                                    '<th>进展状态</th><th>明日计划</th><th>审批状态</th><th>备注信息</th></tr></thead><tbody>' + weekly_report_table +
+                                    '</tbody></table><table class="layui-table">' +
+                                    '<caption><strong style="color:black;">下周计划</strong></caption><thead>' +
+                                    '<tr><th>日期</th><th>工作类别</th><th>工作编号</th><th>工作内容</th>' +
+                                    '<th>工时</th><th>计划开始日期</th><th>计划完成日期</th><th>实际开始日期</th>' +
+                                    '<th>实际完成日期</th><th>进展状态</th><th>备注信息</th></tr></thead>' + plan_report_table +
+                                    '<tbody></tbody></table></div></li>';
+                                lis.push(hc);
+                            });
+                            next(lis.join(""), d.page < d.page_count);
+                        }
+                    })
+                }
+            });
+            <!-- 添加日报 -->
+            $('#addReport').click(function () {
+                layer.open({
+                    type: 2,
+                    title: ['填写日报', 'font-size:20px;'],
+                    id: 'add_report_form', //防止重复弹出
+                    content: '{% url "daily_report_add_form" %}',
+                    area: ["1000px", "500px"],
+                    maxmin: false,
+                    skin: 'layui-layer-lan',
+                    yes: function () {
+                        var index = layer.getFrameIndex();
+                        layer.iframeAuto(index);
+                    },
+                    end: function () {
+                        tableDailyReport.reload('daily_report');
+                    },
+                    cancel: function () {
+                        layer.closeAll();
+                    }
+                });
+            });
+            <!-- 渲染回收站数据表格 -->
+            tableDailyReport.render({
+                elem: '#delete_report',
+                url: '{% url 'delete_report_data' %}',
+                page: true,
+                limit: 20,
+                limits: [20, 40, 60, 80, 100],
+                id: 'trash_report',
+                cols: [[
+                    {field: 'r_id', title: 'ID', align: "center", width: 100, sort: true},
+                    {field: 'job_type', title: '工作类别', align: "center", sort: true},
+                    {field: 'job_date', title: '日期', sort: true, align: "center"},
+                    {field: 'job_code', title: '工作编号', align: "center"},
+                    {field: 'job_time', title: '工时(人/日)', sort: true, align: "center"},
+                    {field: 'job_content', title: '工作内容', align: "center"},
+                    {field: 'job_block', title: '工作阻碍', align: "center"},
+                    {field: 'job_status', title: '进度状态', align: "center"},
+                    {field: 'job_plan', title: '明日计划', align: "center"},
+                    {field: 'job_opinion', title: '审核意见', align: "center", style: "color:red;"},
+                    {field: 'summary_status', title: '审核状态', align: "center", templet: "#summaryStatus"},
+                    {field: 'remark', title: '备注说明', align: "center"},
+                    {field: 'action', fixed: 'right', title: '操作', align: 'center', toolbar: '#trashTable'}
+                ]]
+            });
+            <!-- 渲染日报记录数据表格 -->
+            tableDailyReport.render({
+                elem: '#daily_report',
+                url: '{% url 'daily_report_data' %}',
+                page: true,
+                limit: 20,
+                limits: [20, 40, 60, 80, 100],
+                id: 'daily_report',
+                initSort: {
+                    field: 'job_date',
+                    type: 'desc'  ////排序方式  asc: 升序、desc: 降序、null: 默认排序
+                },
+                cols: [[
+                    {field: 'r_id', title: 'ID', align: "center", width: 100, sort: true},
+                    {field: 'job_type', title: '工作类别', align: "center", sort: true},
+                    {field: 'job_date', title: '日期', sort: true, align: "center"},
+                    {field: 'job_code', title: '工作编号', align: "center"},
+                    {field: 'job_time', title: '工时(人/日)', sort: true, align: "center"},
+                    {field: 'job_content', title: '工作内容', align: "center"},
+                    {field: 'job_block', title: '工作阻碍', align: "center"},
+                    {field: 'job_status', title: '进度状态', align: "center"},
+                    {field: 'job_plan', title: '明日计划', align: "center"},
+                    {field: 'job_opinion', title: '审核意见', align: "center", style: "color:green;"},
+                    {field: 'summary_status', title: '审核状态', align: "center", templet: "#summaryStatus"},
+                    {field: 'remark', title: '备注说明', align: "center"},
+                    {field: 'action', fixed: 'right', title: '操作', align: 'center', toolbar: '#actionTable'},
+                ]]
+            });
+            <!-- 渲染下周计划表格 -->
+            tableDailyReport.render({
+                elem: '#plan_report',
+                url: '{% url "plan_report_get" %}',
+                id: 'planReportTable',
+                page: true,
+                limit: 20,
+                limits: [20, 40, 60, 80, 100],
+                cols: [[
+                    {field: 'r_id', title: 'ID', align: "center", width: 100, sort: true},
+                    {field: 'job_type', title: '工作类别', align: "center", sort: true},
+                    {field: 'job_date', title: '日期', sort: true, align: "center"},
+                    {field: 'job_code', title: '工作编号', align: "center"},
+                    {field: 'job_time', title: '工时(人/日)', sort: true, align: "center"},
+                    {field: 'job_content', title: '工作内容', align: "center"},
+                    {field: 'start_date', title: '计划开始日期', align: "center"},
+                    {field: 'start_date_r', title: '实际开始日期', align: "center"},
+                    {field: 'end_date', title: '计划完成日期', align: "center"},
+                    {field: 'end_date_r', title: '实际完成日期', align: "center"},
+                    {field: 'job_status', title: '进度状态', align: "center"},
+                    {field: 'remark', title: '备注说明', align: "center"},
+                    {field: 'action', fixed: 'right', title: '操作', align: 'center', toolbar: '#actionTable'},
+                ]],
+            });
+            <!-- 重载搜索后下周计划数据表格 -->
+            $("#search_plan_report").click(function () {
+                $("form").submit(function (event) {
+                    event.preventDefault();
+                });
+                tableDailyReport.reload('planReportTable', {
+                    page: {
+                        curr: 1
+                    },
+                    where: {
+                        date_period: $("#date_period2").val(),
+                    }
+                });
+            });
+            <!-- 重载搜索后数据表格 -->
+            $("#search_daily").click(function () {
+                $("form").submit(function (event) {
+                    event.preventDefault();
+                });
+                tableDailyReport.reload('daily_report', {
+                    page: {
+                        curr: 1
+                    },
+                    where: {
+                        job_date: $('#job_date1').val(),
+                        job_code: $('#job_code1').val(),
+                        job_content: $('#job_content1').val(),
+                        date_period: $("#date_period").val(),
+                    }
+                });
+            });
+            <!-- 表格按钮事件监听 -->
+            tableDailyReport.on('tool(trashTable)', function (obj) {
+                var data = obj.data,
+                    layEvent = obj.event,
+                    tr = obj.tr;
+                if (layEvent === "delete") {
+                    layer.confirm(
+                        '确定彻底删除' + data["r_id"] + '这条记录吗？删除之后无法复原哦!',
+                        {
+                            icon: 2,
+                            title: "彻底删除" + data["r_id"] + "?"
+                        },
+                        function (index) {
+                            $.post('{% url 'daily_report_delete' %}' + '?type=1', data);  //传递删除类型，0为放入回收站，1为彻底删除
+                            obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                            layer.close(index);
+                        }
+                    );
+                }
+                else if (layEvent === "reback") {
+                    layer.confirm(
+                        '确定还原' + data["r_id"] + '这条记录吗？',
+                        {
+                            icon: 2,
+                            title: "还原" + data["r_id"] + "?"
+                        },
+                        function (index) {
+                            $.post('{% url 'daily_report_delete' %}' + '?type=2', data);  //传递删除类型，0为放入回收站，1为彻底删除,2为还原数据
+                            obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                            layer.close(index);
+                        }
+                    );
+                }
+            });
+            <!-- 日报表格按钮事件监听 -->
+            tableDailyReport.on('tool(dailyTable)', function (obj) {
+                var data = obj.data; //获得当前行数据
+                var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+                var tr = obj.tr; //获得当前行 tr 的DOM对象
+                if (layEvent === 'del') { //删除
+                    layer.confirm(
+                        '确定删除ID为' + data['r_id'] + '的日报记录吗？你可以在回收站中找到被删除的数据。',
+                        {
+                            icon: 2,
+                            title: "删除" + data["r_id"] + "?"
+                        },
+                        function (index) {
+                            $.post('{% url 'daily_report_delete' %}' + '?type=0', data);  //传递删除类型，0为放入回收站，1为彻底删除
+                            obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                            layer.close(index);
+                        });
+                }
+                else if (layEvent === 'edit') { //编辑
+                    layer.open({
+                        type: 2,
+                        title: '修改日报',
+                        id: 'modifyReport',
+                        skin: 'layui-layer-lan',
+                        area: ["1000px", "500px"],
+                        content: '{% url 'daily_report_modify' %}?id=' + data['r_id'],
+                        anim: 3,
+                        end: function () {
+                            tableDailyReport.reload('daily_report');
+                        }
+                    });
+                }
+            });
+            <!-- 下周计划表格按钮事件监听 -->
+            tableDailyReport.on('tool(planTable)', function (obj) {
+                var data = obj.data; //获得当前行数据
+                var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+                var tr = obj.tr; //获得当前行 tr 的DOM对象
+                if (layEvent === 'del') { //删除
+                    layer.confirm(
+                        '确定删除ID为' + data.r_id + '的下周计划记录吗？',
+                        {
+                            icon: 2,
+                            title: "删除" + data.r_id + "?"
+                        },
+                        function (index) {
+                            $.post('{% url 'plan_report_delete' %}', {"r_id": data.r_id});  //传递删除类型，0为放入回收站，1为彻底删除
+                            obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                            layer.close(index);
+                        });
+                }
+                else if (layEvent === 'edit') { //编辑
+                    layer.open({
+                        type: 2,
+                        title: '修改下周计划',
+                        id: 'modifyPlanReport',
+                        skin: 'layui-layer-lan',
+                        area: ["1000px", "500px"],
+                        content: '{% url 'plan_report_add_form' %}' + '?r_id=' + data.r_id,
+                        anim: 3,
+                        end: function () {
+                            tableDailyReport.reload('planReportTable');
+                        }
+                    });
+                }
+            });
+            $('#addPlanReport').click(function () {
+                layer.open({
+                    type: 2,
+                    title: '添加下周计划',
+                    id: 'add_Plan_Report',
+                    skin: 'layui-layer-lan',
+                    area: ["1000px", "500px"],
+                    content: '{% url 'plan_report_add_form' %}',
+                    anim: 2,
+                    end: function () {
+                        tableDailyReport.reload('planReportTable');
+                    }
+                });
+            });
+            <!-- 监听选项卡切换 -->
+            var layid = location.hash.replace(/^#daily_report=/, '');
+            element.tabChange('daily_report', layid);
+            element.on('tab(daily_report)', function () {
+                location.hash = 'daily_report=' + $(this).attr('lay-id');
+            });
+            <!-- 选项卡点击事件 -->
+            $("#dailyReportManage").click(function () {
+                tableDailyReport.reload("daily_report");
+            });
+            $("#trash").click(function () {
+                tableDailyReport.reload("trash_report");
+            });
+            $("#planReportManage").click(function () {
+                tableDailyReport.reload("planReportTable");
+            });
+            <!-- 周报导出 -->
+            $("#export").click(function () {
+                $.ajax({
+                    url: "{% url 'date_period_get' %}",
+                    type: "get",
+                    dataType: "json",
+                    success: function (d) {
+                        var url = '{% url "export_daily_report" %}';
+                        var h = '<form class="layui-form layui-form-pane" action="' + url + '" method="post" style="margin-top: 40px;"><div class="layui-form-item">' +
+                            '<div class="layui-inline" style="margin-left: 40px;"><select name="date_period1" id="date_period1" lay-filter="date_period1" lay-search="">' +
+                            '<option value="">--选择或搜索日报周期--</option>';
+                        var option = '';
+                        $.each(d, function (i, v) {
+                            option += "<option name='date_period1' value='" + v + "'>" + v + "</option>";
+                        });
+                        h = h + option + '</select></div><div class="layui-inline layui-hide" style="margin-top: 40px;margin-left: 80px;"><button type="submit" class="layui-btn" id="export_button">导出</button>' +
+                            '<button class="layui-btn" id="reset" type="reset">重置</button></div></div></form>';
+                        layer.open({
+                            type: 1,
+                            title: '选择导出日报周期',
+                            id: 'DatePeriod',
+                            skin: 'layui-layer-lan',
+                            area: ["300px", "300px"],
+                            content: h,
+                            btn: ["导出"],
+                            success: function () {
+                                form.render();
+                            },
+                            yes: function (index, layero) {
+                                var date_period = $("#date_period1").val();
+                                if (date_period === "") {
+                                    layer.msg("请选择需要导出的日报周期!");
+                                }
+                                else {
+                                    $("#export_button").trigger('click');
+                                    layer.close(index);
+                                }
+                            }
+                        });
+                    }
+                })
+            })
+        })
+    </script>
+{% endblock %}
