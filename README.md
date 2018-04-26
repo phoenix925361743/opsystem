@@ -2,7 +2,7 @@
 Automatic ops system for department
 
 项目说明：
-  1、基于python2.7+django1.11.6+layui2.2构建；\n
+  1、基于python2.7+django1.11.6+layui2.2构建；
   2、包含周报管理模块、资产管理模块、cobbler接口整合模块、用户控制模块；
   3、项目主要用于日常办公及自动化运维。
   
