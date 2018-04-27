@@ -11,16 +11,16 @@ default_department = u"测试运维部"
 superuser = "admin"
 
 # 默认超级管理员密码
-password = "antiy?test"
+password = "password"
 
 # 默认超级管理员邮箱
 email = "sre@antiy.cn"
 
 # cobbler api地址
-cobbler_server = "http://192.168.18.111/cobbler_api"
+cobbler_server = "http://ip/cobbler_api"
 
 # cobbler 服务器IP地址
-cobbler_server_ip = "192.168.18.111"
+cobbler_server_ip = "ip"
 
 # cobbler web账号
 cobbler_username = "cobbler"
@@ -29,7 +29,7 @@ cobbler_username = "cobbler"
 cobbler_password = "cobbler"
 
 # cobbler服务器 root密码
-cobbler_root_password = "antiy?pmc"
+cobbler_root_password = "password"
 
 # cobbler ks文件目录
 cobbler_ks_dir = r"/var/lib/cobbler/kickstarts/"
@@ -38,7 +38,7 @@ cobbler_ks_dir = r"/var/lib/cobbler/kickstarts/"
 udp_server_port = 40123
 
 # UDP Server IP地址
-udp_server_ip = "192.168.19.36"
+udp_server_ip = "ip"
 
 
 
