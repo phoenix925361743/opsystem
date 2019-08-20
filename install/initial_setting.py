@@ -5,7 +5,7 @@
 """基础配置文件，用于初始化项目环境"""
 
 # 默认超级管理员所属部门
-default_department = u"测试运维部"
+default_department = u"运维部"
 
 # 默认超级管理员账号
 superuser = "admin"
@@ -14,7 +14,7 @@ superuser = "admin"
 password = "password"
 
 # 默认超级管理员邮箱
-email = "sre@antiy.cn"
+email = "admin@mail.com"
 
 # cobbler api地址
 cobbler_server = "http://ip/cobbler_api"
