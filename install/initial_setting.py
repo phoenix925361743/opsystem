@@ -5,7 +5,7 @@
 """基础配置文件，用于初始化项目环境"""
 
 # 默认超级管理员所属部门
-default_department = u"运维部"
+default_department = u"xxx"
 
 # 默认超级管理员账号
 superuser = "admin"
